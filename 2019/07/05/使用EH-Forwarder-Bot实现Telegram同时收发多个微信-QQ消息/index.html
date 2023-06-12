@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+
+<head>
+  <meta name="generator" content="Hexo 6.3.0">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.19.0">
+  <meta charset="utf-8">
+  
+
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel='dns-prefetch' href='https://gcore.jsdelivr.net'>
+  <link rel="preconnect" href="https://gcore.jsdelivr.net" crossorigin>
+  <link rel='dns-prefetch' href='//unpkg.com'>
+
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  
+  <title>使用EH Forwarder Bot实现Telegram同时收发多个微信/QQ消息 - 夜幕下的星光</title>
+
+  
+    <meta name="description" content="说明：EH Forwarder Bot是一个可扩展的聊天隧道框架，允许用户一次发送和接收来自多个IM平台的消息，并最终远程管理他们的帐户，目前可以实现的Telegram收发QQ、微信、Facebook Messenger等消息，你也可以同时一起收发N个微信、N个QQ等，这里就说下Telegram收发微信&#x2F;QQ消息的手动安装及Docker安装。 收发微信项目地址：https:&#x2F;&#x2F;githu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用EH Forwarder Bot实现Telegram同时收发多个微信&#x2F;QQ消息">
+<meta property="og:url" content="https://fxxsj.vercel.app/2019/07/05/%E4%BD%BF%E7%94%A8EH-Forwarder-Bot%E5%AE%9E%E7%8E%B0Telegram%E5%90%8C%E6%97%B6%E6%94%B6%E5%8F%91%E5%A4%9A%E4%B8%AA%E5%BE%AE%E4%BF%A1-QQ%E6%B6%88%E6%81%AF/index.html">
+<meta property="og:site_name" content="夜幕下的星光">
+<meta property="og:description" content="说明：EH Forwarder Bot是一个可扩展的聊天隧道框架，允许用户一次发送和接收来自多个IM平台的消息，并最终远程管理他们的帐户，目前可以实现的Telegram收发QQ、微信、Facebook Messenger等消息，你也可以同时一起收发N个微信、N个QQ等，这里就说下Telegram收发微信&#x2F;QQ消息的手动安装及Docker安装。 收发微信项目地址：https:&#x2F;&#x2F;githu">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-07-05T06:40:26.000Z">
+<meta property="article:modified_time" content="2023-06-12T02:02:22.952Z">
+<meta property="article:author" content="Fxxsj">
+<meta property="article:tag" content="教程">
+<meta name="twitter:card" content="summary">
+  
+  
+  
+  <meta name="keywords" content="教程">
+
+  <!-- feed -->
+  
+
+  
+    
+<link rel="stylesheet" href="/css/main.css">
+
+  
+
+  
+
+  
+
+  
+
+
+  
+</head>
+
+<body>
+  
+
+
+
+
+  <div class='l_body' id='start'>
+    <aside class='l_left' layout='post'>
+    
+
+  
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/about/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.4/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="https://i.imgloc.com/2023/06/08/V24nAw.jpeg" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.4/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">夜幕下的星光</div><div class="sub cap">在我写字的新世界</div></a></div>
+
+<nav class="menu dis-select"></nav>
+</header>
+
+
+<div class="widgets">
+<widget class="widget-wrapper search"><div class="widget-body"><div class="search-wrapper" id="search"><form class="search-form"><input type="text" class="search-input" id="search-input" data-filter="/blog/" placeholder="文章搜索"><svg t="1670596976048" class="icon search-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2676" width="200" height="200"><path d="M938.2 832.6L723.8 618.1c-2.5-2.5-5.3-4.4-7.9-6.4 36.2-55.6 57.3-121.8 57.3-193.1C773.3 222.8 614.6 64 418.7 64S64 222.8 64 418.6c0 195.9 158.8 354.6 354.6 354.6 71.3 0 137.5-21.2 193.2-57.4 2 2.7 3.9 5.4 6.3 7.8L832.5 938c14.6 14.6 33.7 21.9 52.8 21.9 19.1 0 38.2-7.3 52.8-21.8 29.2-29.1 29.2-76.4 0.1-105.5M418.7 661.3C284.9 661.3 176 552.4 176 418.6 176 284.9 284.9 176 418.7 176c133.8 0 242.6 108.9 242.6 242.7 0 133.7-108.9 242.6-242.6 242.6" p-id="2677"></path></svg></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div></div></widget>
+
+
+<widget class="widget-wrapper toc single" id="data-toc"><div class="widget-header cap dis-select"><span class="name">使用EH Forwarder Bot实现Telegram同时收发多个微信/QQ消息</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%B4%E6%98%8E%EF%BC%9A"><span class="toc-text">说明：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%94%B6%E5%8F%91%E5%BE%AE%E4%BF%A1"><span class="toc-text">收发微信</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%AE%89%E8%A3%85%E4%BE%9D%E8%B5%96"><span class="toc-text">1、安装依赖</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E5%AE%89%E8%A3%85Python3-6"><span class="toc-text">2、安装Python3.6</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%E3%80%81%E5%AE%89%E8%A3%85ffmpeg"><span class="toc-text">3、安装ffmpeg</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4%E3%80%81%E5%AE%89%E8%A3%85%E6%A1%86%E6%9E%B6"><span class="toc-text">4、安装框架</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5%E3%80%81%E5%AE%89%E8%A3%85TG%E5%92%8C%E5%BE%AE%E4%BF%A1%E6%A8%A1%E5%9D%97"><span class="toc-text">5、安装TG和微信模块</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6%E3%80%81%E5%90%AF%E7%94%A8%E6%A8%A1%E5%9D%97"><span class="toc-text">6、启用模块</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7%E3%80%81%E5%BB%BA%E7%AB%8BTG%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-text">7、建立TG配置文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8%E3%80%81%E5%90%AF%E5%8A%A8"><span class="toc-text">8、启动</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%94%B6%E5%8F%91QQ%E6%B6%88%E6%81%AF"><span class="toc-text">收发QQ消息</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%89%E8%A3%85TG%E5%92%8CQQ%E6%A8%A1%E5%9D%97%EF%BC%9A"><span class="toc-text">安装TG和QQ模块：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%89%E8%A3%85wine-coolq%EF%BC%9A"><span class="toc-text">安装wine-coolq：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B0%E5%BB%BAQQ%E6%A8%A1%E5%9D%97%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%EF%BC%9A"><span class="toc-text">新建QQ模块配置文件：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker%E5%AE%89%E8%A3%85"><span class="toc-text">Docker安装</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%AE%89%E8%A3%85Docker"><span class="toc-text">1、安装Docker</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81Telegram%E6%94%B6%E5%8F%91QQ%E6%B6%88%E6%81%AF"><span class="toc-text">2、Telegram收发QQ消息</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%E3%80%81Telegram%E6%94%B6%E5%8F%91%E5%BE%AE%E4%BF%A1%E6%B6%88%E6%81%AF"><span class="toc-text">3、Telegram收发微信消息</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%88%E6%9D%83%E5%A3%B0%E6%98%8E"><span class="toc-text">版权声明</span></a></li></ol></div></div></widget>
+
+
+
+
+</div>
+
+
+    </aside>
+    <div class='l_main'>
+      
+
+      
+
+
+
+<div class="bread-nav fs12"><div id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a><span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E5%AD%A6%E4%B9%A0/">学习</a></div><div id="post-meta">发布于&nbsp;<time datetime="2019-07-05T06:40:26.000Z">2019-07-05</time></div></div>
+
+<article class='md-text content post'>
+<h1 class="article-title"><span>使用EH Forwarder Bot实现Telegram同时收发多个微信/QQ消息</span></h1>
+<h3 id="说明："><a href="#说明：" class="headerlink" title="说明："></a>说明：</h3><p><code>EH Forwarder Bot</code>是一个可扩展的聊天隧道框架，允许用户一次发送和接收来自多个<code>IM</code>平台的消息，并最终远程管理他们的帐户，目前可以实现的<code>Telegram</code>收发<code>QQ</code>、微信、<code>Facebook Messenger</code>等消息，你也可以同时一起收发<code>N</code>个微信、<code>N</code>个<code>QQ</code>等，这里就说下<code>Telegram</code>收发微信&#x2F;<code>QQ</code>消息的手动安装及<code>Docker</code>安装。</p>
+<h3 id="收发微信"><a href="#收发微信" class="headerlink" title="收发微信"></a>收发微信</h3><p><strong>项目地址：</strong><a target="_blank" rel="noopener" href="https://github.com/blueset/ehForwarderBot">https://github.com/blueset/ehForwarderBot</a></p>
+<p>所使用的模块地址：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#Telegram模块</span><br><span class="line">https://github.com/blueset/efb-telegram-master</span><br><span class="line">#微信模块</span><br><span class="line">https://github.com/blueset/efb-wechat-slave</span><br></pre></td></tr></table></figure>
+
+<p>其他模块地址→<a target="_blank" rel="noopener" href="https://github.com/blueset/ehForwarderBot/wiki/Channels-Repository">传送门</a>，包括<code>Facebook Messenger</code>等模块，有兴趣的可以看下。</p>
+<p><strong>环境要求：</strong><code>Python 3.6+</code>、<code>EH Forwarder Bot 2.0+</code>、<code>ffmpeg</code>、<code>libmagic</code>、<code>libwebp</code></p>
+<p>手动教程适用于<code>Debian</code>、<code>CentOS</code>、<code>Ubuntu</code>，如果你想用<code>Ubuntu</code>的话，最好使用<code>18.04+</code>版本。</p>
+<h4 id="1、安装依赖"><a href="#1、安装依赖" class="headerlink" title="1、安装依赖"></a>1、安装依赖</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#CentOS系统</span><br><span class="line">yum install file-devel libwebp-tools git screen -y</span><br><span class="line"></span><br><span class="line">#Debian/Ubuntu系统</span><br><span class="line">apt install libwebp-dev libmagic-dev git screen -y</span><br></pre></td></tr></table></figure>
+
+<h4 id="2、安装Python3-6"><a href="#2、安装Python3-6" class="headerlink" title="2、安装Python3.6"></a>2、安装Python3.6</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#CentOS系统</span><br><span class="line">wget https://www.moerats.com/usr/shell/Python3/CentOS_Python3.6.sh &amp;&amp; sh CentOS_Python3.6.sh</span><br><span class="line">#Debian系统</span><br><span class="line">wget https://www.moerats.com/usr/shell/Python3/Debian_Python3.6.sh &amp;&amp; sh Debian_Python3.6.sh</span><br><span class="line">#Ubuntu系统</span><br><span class="line">apt update</span><br><span class="line">apt install python3-pip python3-setuptools python3-dev -y</span><br></pre></td></tr></table></figure>
+
+<h4 id="3、安装ffmpeg"><a href="#3、安装ffmpeg" class="headerlink" title="3、安装ffmpeg"></a>3、安装ffmpeg</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#下载ffmpeg二进制</span><br><span class="line">wget https://www.moerats.com/usr/down/ffmpeg/ffmpeg-git-$(getconf LONG_BIT)bit-static.tar.xz</span><br><span class="line">#解压文件</span><br><span class="line">tar xvf ffmpeg-git-*-static.tar.xz</span><br><span class="line">#移动ffmpeg可执行文件</span><br><span class="line">mv ffmpeg-git-*/ffmpeg  ffmpeg-git-*/ffprobe /usr/bin/</span><br><span class="line">#删除文件</span><br><span class="line">rm -rf ffmpeg-git-*</span><br></pre></td></tr></table></figure>
+
+<h4 id="4、安装框架"><a href="#4、安装框架" class="headerlink" title="4、安装框架"></a>4、安装框架</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#安装稳定版</span><br><span class="line">pip3 install ehforwarderbot</span><br><span class="line"></span><br><span class="line">#安装开发版，建议安装开发版，bug修复快些，功能也新</span><br><span class="line">pip3 install git+https://github.com/blueset/ehforwarderbot.git</span><br></pre></td></tr></table></figure>
+
+<h4 id="5、安装TG和微信模块"><a href="#5、安装TG和微信模块" class="headerlink" title="5、安装TG和微信模块"></a>5、安装TG和微信模块</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip3 install efb-telegram-master efb-wechat-slave</span><br></pre></td></tr></table></figure>
+
+<h4 id="6、启用模块"><a href="#6、启用模块" class="headerlink" title="6、启用模块"></a>6、启用模块</h4><p>先新建配置文件夹和配置文件<code>config.yaml</code>，使用命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#default为配置文件默认的文件夹，你也可以命名为其它的，不会玩的就默认</span><br><span class="line">mkdir -p ~/.ehforwarderbot/profiles/default</span><br><span class="line">nano ~/.ehforwarderbot/profiles/default/config.yaml</span><br></pre></td></tr></table></figure>
+
+<p>参考代码为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#请根据实际情况修改</span><br><span class="line">master_channel: foo.demo_master</span><br><span class="line">slave_channels:</span><br><span class="line">- foo.demo_slave</span><br><span class="line">- bar.dummy</span><br><span class="line">middlewares:</span><br><span class="line">- foo.null</span><br></pre></td></tr></table></figure>
+
+<p>以上对应的均为模块名称，模块参考→<a target="_blank" rel="noopener" href="https://github.com/blueset/ehForwarderBot/wiki/Channels-Repository">传送门</a>，比如这里博主只用了<code>Telegram</code>和<code>WeChat</code>模块，所以大致配置为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">master_channel: blueset.telegram</span><br><span class="line">slave_channels:</span><br><span class="line">- blueset.wechat</span><br></pre></td></tr></table></figure>
+
+<p>然后使用<code>Ctrl+x</code>、<code>y</code>保存退出。</p>
+<p>这只是登录一个微信号，如果你要同时登录多个微信号，那么配置文件就需要改为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#比如我要同时登录并收发3个微信号</span><br><span class="line">master_channel: blueset.telegram</span><br><span class="line">slave_channels:</span><br><span class="line">- blueset.wechat</span><br><span class="line">- blueset.wechat#moe123</span><br><span class="line">- blueset.wechat#rats321</span><br></pre></td></tr></table></figure>
+
+<p>只需要在后面使用<code>#</code>指定一个<code>ID</code>号，该<code>ID</code>号只能有字母，数字和下划线，即正则表达式<code>[a-zA-Z0-9_]+</code>，想登录几个账户就加几个。如果你使用<code>QQ</code>、<code>Facebook Messenger</code>模块的话，设置方法也一样。</p>
+<h4 id="7、建立TG配置文件"><a href="#7、建立TG配置文件" class="headerlink" title="7、建立TG配置文件"></a>7、建立TG配置文件</h4><p>建立配置文件前需要先获取<code>Telegram</code>的<code>Token</code>和<code>Userid</code>，获取方法如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#Telegram的Token获取</span><br><span class="line">1、在Telegram关注@BotFather</span><br><span class="line">2、再到对话框依次输入：/start=&gt;/newbot，然后会要你给机器人命名(如：MoeratsBot)，命名完成会给你一个Token。</span><br><span class="line"></span><br><span class="line">#Telegram群Userid获取</span><br><span class="line">1、先和你的机器人聊天，随便发一句话。</span><br><span class="line">2、在浏览器输入https://api.telegram.org/botxx:xx/getUpdates(其中xx:xx为Token)，然后chat后面的id即为你的userid。</span><br></pre></td></tr></table></figure>
+
+<p>再新建一个<code>Telegram</code>模块配置文件夹和配置文件<code>config.yaml</code>，使用命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#同样的也建在default文件夹，如果你上面更改了default文件夹，那这里也要更改</span><br><span class="line">mkdir ~/.ehforwarderbot/profiles/default/blueset.telegram</span><br><span class="line">nano ~/.ehforwarderbot/profiles/default/blueset.telegram/config.yaml</span><br></pre></td></tr></table></figure>
+
+<p>填入以下代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">token: &quot;12345:moerats&quot; </span><br><span class="line">admins:</span><br><span class="line">- 765432 </span><br></pre></td></tr></table></figure>
+
+<p>然后使用<code>Ctrl+x</code>、<code>y</code>保存退出。上面所对应的参数分别为<code>Token</code>和<code>Userid</code>。关于<code>Telegram</code>模块的更多玩法可以参考→<a target="_blank" rel="noopener" href="https://github.com/blueset/efb-telegram-master">传送门</a>。</p>
+<h4 id="8、启动"><a href="#8、启动" class="headerlink" title="8、启动"></a>8、启动</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#该命令会默认从default文件夹读取信息，如果你之前建的是moerats文件夹，那命令应该为ehforwarderbot -p moerats</span><br><span class="line">ehforwarderbot</span><br></pre></td></tr></table></figure>
+
+<p>这时候会给一个微信二维码或者二维码链接你，放到浏览器打开扫描登录即可，如果你设置了同时登录多个账户，那设置几个就需要登录几个。</p>
+<p>然后使用<code>Ctrl+C</code>断开运行，再使用命令后台运行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">screen -dmS EHF ehforwarderbot</span><br></pre></td></tr></table></figure>
+
+<p>最后你的微信消息会通过机器人发送给你，你也可以通过机器人将消息发送给指定好友。</p>
+<h3 id="收发QQ消息"><a href="#收发QQ消息" class="headerlink" title="收发QQ消息"></a>收发QQ消息</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">提示：这里随便提了下，了解下就行了，建议使用下面Docker方式安装。</span><br></pre></td></tr></table></figure>
+
+<p>所使用的模块地址：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#Telegram模块</span><br><span class="line">https://github.com/blueset/efb-telegram-master</span><br><span class="line">#QQ模块</span><br><span class="line">https://github.com/milkice233/efb-qq-slave</span><br></pre></td></tr></table></figure>
+
+<p>由于方法写的很大概，所以需要你把收发微信的方法看懂，这里<code>EH Forwarder Bot</code>只支持<code>酷Q</code>客户端，一般采用<code>Docker</code>的方法在<code>Linux</code>上安装酷<code>Q</code>，方法很久以前就说过了，参考→<a target="_blank" rel="noopener" href="https://www.moerats.com/archives/802/">传送门</a>，不过启动命令变了下，也就是安装<code>wine-coolq</code>的命令。</p>
+<h4 id="安装TG和QQ模块："><a href="#安装TG和QQ模块：" class="headerlink" title="安装TG和QQ模块："></a>安装<code>TG</code>和<code>QQ</code>模块：</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip3 install efb-telegram-master efb-qq-slave</span><br></pre></td></tr></table></figure>
+
+<h4 id="安装wine-coolq："><a href="#安装wine-coolq：" class="headerlink" title="安装wine-coolq："></a>安装<code>wine-coolq</code>：</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">mkdir coolq  #包含CoolQ程序文件</span><br><span class="line">docker run -ti --rm --name cqhttp-test --net=&quot;host&quot; \</span><br><span class="line">     -v $(pwd)/coolq:/home/user/coolq     `#mount coolq folder` \</span><br><span class="line">     -p 9000:9000                         `#网页noVNC端口` \</span><br><span class="line">     -p 5700:5700                         `#酷Q对外提供的API接口的端口` \</span><br><span class="line">     -e VNC_PASSWD=MAX8char               `#请修改VNC密码！！！！` \</span><br><span class="line">     -e COOLQ_PORT=5700                   `#酷Q对外提供的API接口的端口` \</span><br><span class="line">     -e COOLQ_ACCOUNT=123456              `#在此输入要登录的QQ号，虽然可选但是建议填入` \</span><br><span class="line">     -e CQHTTP_POST_URL=http://127.0.0.1:8000   `#efb-qq-slave监听的端口/地址用于接受传入的消息` \</span><br><span class="line">     -e CQHTTP_SERVE_DATA_FILES=yes       `#允许以HTTP方式访问酷Q数据文件` \</span><br><span class="line">     -e CQHTTP_ACCESS_TOKEN=ac0f790e1fb74ebcaf45da77a6f9de47  `#Access Token` \</span><br><span class="line">     -e CQHTTP_POST_MESSAGE_FORMAT=array  `# 回传消息时使用数组(必选)` \</span><br><span class="line">     richardchien/cqhttp:latest</span><br></pre></td></tr></table></figure>
+
+<p>然后使用<code>ip:9000</code>访问<code>noVNC</code>登录<code>酷Q</code>即可。</p>
+<h4 id="新建QQ模块配置文件："><a href="#新建QQ模块配置文件：" class="headerlink" title="新建QQ模块配置文件："></a>新建<code>QQ</code>模块配置文件：</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir ~/.ehforwarderbot/profiles/default/milkice.qq</span><br><span class="line">nano ~/.ehforwarderbot/profiles/default/milkice.qq/config.yaml</span><br></pre></td></tr></table></figure>
+
+<p>填入的代码大致如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Client: CoolQ                         #指定要使用的QQ客户端（此处为CoolQ）</span><br><span class="line">CoolQ:</span><br><span class="line">    type: HTTP                        #指定efb-qq-slave与酷Q通信的方式 现阶段仅支持HTTP</span><br><span class="line">    access_token: ac0f790e1fb74ebcaf45da77a6f9de47</span><br><span class="line">    api_root: http://127.0.0.1:5700/  # 酷Q API接口地址/端口</span><br><span class="line">    host: 127.0.0.1                   # efb-qq-slave所监听的地址用于接收消息</span><br><span class="line">    port: 8000                        # 同上</span><br><span class="line">    is_pro: false                      # 若为酷Q Pro则为true，反之为false</span><br><span class="line">    air_option:                       # 包含于air_option的配置选项仅当is_pro为false时才有效</span><br><span class="line">        upload_to_smms: true          # 将来自EFB主端(通常是Telegram) 的图片上传到sm.ms服务器并以链接的形式发送到QQ端</span><br></pre></td></tr></table></figure>
+
+<p>最后使用<code>ehforwarderbot</code>命令启动即可。</p>
+<h3 id="Docker安装"><a href="#Docker安装" class="headerlink" title="Docker安装"></a>Docker安装</h3><p>这里选择<code>2</code>个最新的<code>Docker</code>镜像，也是官方推荐的，项目地址：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#Telegram收发QQ消息</span><br><span class="line">https://github.com/Earth-Online/efb-qq-coolq-docker</span><br><span class="line">#Telegram收发微信消息</span><br><span class="line">https://www.github.com/Mikubill/efb-wechat-docker</span><br></pre></td></tr></table></figure>
+
+<h4 id="1、安装Docker"><a href="#1、安装Docker" class="headerlink" title="1、安装Docker"></a>1、安装Docker</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#CentOS 6</span><br><span class="line">rpm -iUvh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm</span><br><span class="line">yum update -y</span><br><span class="line">yum -y install docker-io</span><br><span class="line">service docker start</span><br><span class="line">chkconfig docker on</span><br><span class="line"></span><br><span class="line">#CentOS 7、Debian、Ubuntu</span><br><span class="line">curl -sSL https://get.docker.com/ | sh</span><br><span class="line">systemctl start docker</span><br><span class="line">systemctl enable docker</span><br></pre></td></tr></table></figure>
+
+<h4 id="2、Telegram收发QQ消息"><a href="#2、Telegram收发QQ消息" class="headerlink" title="2、Telegram收发QQ消息"></a>2、Telegram收发QQ消息</h4><p>安装<code>docker-compose</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">curl -L https://github.com/docker/compose/releases/download/1.23.2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose</span><br><span class="line">chmod +x /usr/local/bin/docker-compose</span><br><span class="line">#验证是否安装成功</span><br><span class="line">docker-compose --version</span><br><span class="line">#返回以下信息即安装成功</span><br><span class="line">docker-compose version 1.23.2, build 1110ad01</span><br></pre></td></tr></table></figure>
+
+<p>拉取<code>Docker</code>源码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/Earth-Online/efb-qq-coolq-docker.git</span><br><span class="line">cd efb-qq-coolq-docker</span><br><span class="line">#编辑config.yaml配置文件</span><br><span class="line">nano ehforward_config/profiles/default/blueset.telegram/config.yaml</span><br></pre></td></tr></table></figure>
+
+<p>修改如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#token和userid参数获取方法查看上面的手动安装教程</span><br><span class="line">token: &quot;你的TG机器人Token&quot;</span><br><span class="line">admins:</span><br><span class="line">- 你的Userid</span><br></pre></td></tr></table></figure>
+
+<p>然后再编辑<code>docker-compose.yml</code>文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nano docker-compose.yml</span><br></pre></td></tr></table></figure>
+
+<p>修改如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- VNC_PASSWD=你的密码</span><br><span class="line">- COOLQ_ACCOUNT=你的qq账号</span><br></pre></td></tr></table></figure>
+
+<p>后台启动：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#第一次启动会构建镜像，所以会慢点</span><br><span class="line">docker-compose up -d</span><br></pre></td></tr></table></figure>
+
+<p>然后打开<code>ip:9801</code>登陆<code>novnc</code>后完成<code>coolq</code>登陆操作。如果该地址打不开，请检查下防火墙。</p>
+<h4 id="3、Telegram收发微信消息"><a href="#3、Telegram收发微信消息" class="headerlink" title="3、Telegram收发微信消息"></a>3、Telegram收发微信消息</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#拉取源码</span><br><span class="line">git clone https://github.com/mikubill/efb-wechat-docker.git</span><br><span class="line">#构建镜像</span><br><span class="line">cd efb-wechat-docker &amp;&amp; docker build -t mikubill/efbwechat .</span><br><span class="line">#启动镜像，TOKEN为TG机器人Token、ADMIN为你的Userid，获取方法查看上面的手动安装教程</span><br><span class="line">docker run -d -t --name &quot;efbwechat&quot; -e TOKEN=xxxx -e ADMIN=xxxx mikubill/efbwechat</span><br></pre></td></tr></table></figure>
+
+<p>最后获取微信登录验证码，使用命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker logs -f efbwechat </span><br></pre></td></tr></table></figure>
+
+<p>扫描登录即可。</p>
+<p>最后这里都没有给微信添加额外的配置文件，直接使用默认的微信配置，如果想扩展微信功能的可以参考→<a target="_blank" rel="noopener" href="https://github.com/blueset/efb-wechat-slave#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E4%BE%8B">传送门</a>，不过由于模块使用的微信网页版，所以支持的功能是有限的，比如：没有朋友圈、不能发语音、位置等等，一般来说也够用了，至于<code>QQ</code>的话，功能肯定受<code>酷Q</code>限制，暂时不能处理好友请求处理，加群请求处理，语音发送&#x2F;接收等，对于<code>Facebook Messenger</code>模块的话，有需求的可以自己试试安装配置。</p>
+<h3 id="版权声明"><a href="#版权声明" class="headerlink" title="版权声明"></a>版权声明</h3><blockquote>
+<p>本文转载自<a target="_blank" rel="noopener" href="https://www.moerats.com/archives/931/">Rat’s Blog</a>。</p>
+<p>感谢原作者，以及开源世界。</p>
+</blockquote>
+
+
+
+<div class="article-footer reveal fs14"><section id="license"><div class="header"><span>许可协议</span></div><div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div></section></div>
+
+</article>
+
+<div class="related-wrap reveal" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2023/06/08/hello-world/">Hello World</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2019/06/08/Markdown%E5%9F%BA%E6%9C%AC%E8%AF%AD%E6%B3%95/">Markdown基本语法</a></div></section></div>
+
+
+
+
+
+
+
+
+      
+<footer class="page-footer reveal fs12"><hr><div class="text"><p>本站由 <a href="/">@Fxxsj</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar">Stellar</a> 主题创建。</p>
+</div></footer>
+
+      <div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg class="icon" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15301"><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 2.3 26.8 24.6 47.5 51.6 47.6h416.5v4z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15302"></path><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 1.9 27.7 23.9 49.7 51.6 51.6h416.5z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15303"></path></svg>
+  </button>
+</div>
+
+    </div>
+  </div>
+  <div class='scripts'>
+    <script type="text/javascript">
+  const stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = stellar.config.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.version = '1.19.0';
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.19.0';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+    root : '/',
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://gcore.jsdelivr.net/npm/jquery@3.6.2/dist/jquery.min.js'
+  };
+
+  if ('local_search') {
+    stellar.search = {};
+    stellar.search.service = 'local_search';
+    if (stellar.search.service == 'local_search') {
+      let service_obj = Object.assign({}, {"field":"all","path":"/search.json","content":true,"sort":"-date"});
+      stellar.search[stellar.search.service] = service_obj;
+    }
+  }
+
+  // stellar js
+  stellar.plugins.stellar = Object.assign({"sites":"/js/plugins/sites.js","friends":"/js/plugins/friends.js","ghinfo":"/js/plugins/ghinfo.js","timeline":"/js/plugins/timeline.js","linkcard":"/js/plugins/linkcard.js","fcircle":"/js/plugins/fcircle.js","weibo":"/js/plugins/weibo.js"});
+
+  stellar.plugins.marked = Object.assign("https://cdn.bootcdn.net/ajax/libs/marked/4.0.18/marked.min.js");
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/vanilla-lazyload@17.8.3/dist/lazyload.min.js","transition":"blur"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@8.4.5/swiper-bundle.min.css","js":"https://unpkg.com/swiper@8.4.5/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://gcore.jsdelivr.net/npm/scrollreveal@4.0.9/dist/scrollreveal.min.js","distance":"8px","duration":500,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","instant_page":"https://gcore.jsdelivr.net/gh/volantis-x/cdn-volantis@4.1.2/js/instant_page.js","flying_pages":"https://gcore.jsdelivr.net/gh/gijo-varghese/flying-pages@2.1.2/flying-pages.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.fancybox = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js","css":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css","selector":".swiper-slide img"});
+  }
+  if ('false' == 'true') {
+    stellar.plugins.heti = Object.assign({"enable":false,"css":"https://unpkg.com/heti@0.9.2/umd/heti.min.css","js":"https://unpkg.com/heti@0.9.2/umd/heti-addon.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.copycode = Object.assign({"enable":true,"js":"/js/plugins/copycode.js","default_text":"Copy","success_text":"Copied"});
+  }
+</script>
+
+<!-- required -->
+
+  
+<script src="/js/main.js" async></script>
+
+
+
+<!-- optional -->
+
+
+
+<!-- inject -->
+
+
+  </div>
+</body>
+</html>
