@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark_colorblind" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    <link rel="icon" href="https://github.githubassets.com/favicons/favicon.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="# 0 前言
+
+居家办公，手头一台 Windows 工作本，由于连接的是自己的外网，需要借助 VPN 才能登陆到内网环境下的远程服务器进行开发工作。">
+<meta property="og:title" content="使用 vscode + Remote-SSH 插件 + vscode-server 进行远程开发">
+<meta property="og:description" content="# 0 前言
+
+居家办公，手头一台 Windows 工作本，由于连接的是自己的外网，需要借助 VPN 才能登陆到内网环境下的远程服务器进行开发工作。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://fxxsj.github.io/post/shi-yong-%20vscode%20%2B%20Remote-SSH%20-cha-jian-%20%2B%20vscode-server%20-jin-xing-yuan-cheng-kai-fa.html">
+<meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
+<title>使用 vscode + Remote-SSH 插件 + vscode-server 进行远程开发</title>
+<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+</style>
+
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">使用 vscode + Remote-SSH 插件 + vscode-server 进行远程开发</h1>
+<div class="title-right">
+    <a href="https://fxxsj.github.io" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/fxxsj/fxxsj.github.io/issues/11" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><h1>0 前言</h1>
+<p>居家办公，手头一台 Windows 工作本，由于连接的是自己的外网，需要借助 VPN 才能登陆到内网环境下的远程服务器进行开发工作。此前一直使用 VNC 来做远程桌面可视化，但由于 VPN 带宽有限，此时再使用 VNC 会遇到明显的画面卡顿问题。</p>
+<p>为解决上述开发流程的痛点，我们可以使用本地 vscode + Remote-SSH 插件 + 远程 vscode-server 搭建一个远程开发环境，将代码可视化放到本地，无需再借助 VNC。</p>
+<h1>1 准备</h1>
+<p>在开始环境配置前，需要满足一些基础前提条件：</p>
+<ul>
+<li>已安装 SSH（Git 自带，最好直接安装 Git）</li>
+<li>本地电脑已连接网络</li>
+<li>本地电脑已连接 VPN（若远程服务器在内网下）</li>
+<li>远程服务器已连接网络</li>
+</ul>
+<h1>2 环境配置</h1>
+<p>本文中所使用的本地操作系统环境为 Windows 10，远程操作系统环境 Linux Ubuntu 18.04。</p>
+<h2>2.1 配置本地环境</h2>
+<ul>
+<li>安装 <a href="https://code.visualstudio.com/" rel="nofollow">vscode</a></li>
+<li>安装 <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh" rel="nofollow">Remote-SSH 插件</a></li>
+</ul>
+<p>可以将其它 Windows 环境中已安装好的 vscode、扩展及相应的 settings.json 配置文件直接拷贝到本地对应目录下，实现免安装即开即用。vscode 放置路径随意，扩展放到本地 <code class="notranslate">C:\Users\你的用户名</code> 目录下，即 Windows 的 <code class="notranslate">~</code> 目录，settings.json 配置文件放到 <code class="notranslate">C:\Users\你的用户名\AppData\Roaming\Code\User</code> 目录下。</p>
+<h2>2.2 配置远程环境</h2>
+<ol>
+<li>
+<p>查看 vscode commit id 并下载对应版本的 vscode-server</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/ce2defc8a08598a8bf969aaee42c7457e681c25f72f1679cfd3cc68138478e6f/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545362539462541352545372539432538422532307673636f64652532302545362539452538342545352542422542412545342542462541312545362538312541462e706e67"><img src="https://camo.githubusercontent.com/ce2defc8a08598a8bf969aaee42c7457e681c25f72f1679cfd3cc68138478e6f/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545362539462541352545372539432538422532307673636f64652532302545362539452538342545352542422542412545342542462541312545362538312541462e706e67" alt="查看 vscode 构建信息" data-canonical-src="https://image.shipengx.com/%E6%9F%A5%E7%9C%8B%20vscode%20%E6%9E%84%E5%BB%BA%E4%BF%A1%E6%81%AF.png" style="max-width: 100%;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/36c887fd3900be1a0363d0a8c9fd66974ee2217ac8c0748a62840cf4ac4ced74/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545362538462539302545352538462539362532307673636f6465253230636f6d6d697425323069642e706e67"><img src="https://camo.githubusercontent.com/36c887fd3900be1a0363d0a8c9fd66974ee2217ac8c0748a62840cf4ac4ced74/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545362538462539302545352538462539362532307673636f6465253230636f6d6d697425323069642e706e67" alt="提取 vscode commit id" data-canonical-src="https://image.shipengx.com/%E6%8F%90%E5%8F%96%20vscode%20commit%20id.png" style="max-width: 100%;"></a></p>
+<p>下载链接的形式为：</p>
+<pre class="notranslate"><code class="notranslate">https://update.code.visualstudio.com/commit:commit_id/server-linux-x64/stable
+</code></pre>
+<p>本文中使用的 vscode 的 commit id 为 <code class="notranslate">e18005f0f1b33c29e81d732535d8c0e47cafb0b5</code>，故对应下载链接为：</p>
+<pre class="notranslate"><code class="notranslate">https://update.code.visualstudio.com/commit:e18005f0f1b33c29e81d732535d8c0e47cafb0b5/server-linux-x64/stable
+</code></pre>
+<p>下载将得到 <code class="notranslate">vscode-server-linux-x64.tar.gz</code> 文件。</p>
+</li>
+<li>
+<p>将 vscode-server 部署到远程服务器<br>
+登陆远程服务器，在 <code class="notranslate">~</code> 目录下创建 <code class="notranslate">.vscode-server/bin</code> 目录：</p>
+<pre class="notranslate"><code class="notranslate">mkdir -p ~/.vscode-server/bin
+</code></pre>
+<p>将下载得到的 <code class="notranslate">vscode-server-linux-x64.tar.gz</code> 文件上传至上述新建的 <code class="notranslate">~/.vscode-server/bin</code> 目录：</p>
+<pre class="notranslate"><code class="notranslate">scp vscode-server-linux-x64.tar.gz user_name@server_ip:~/.vscode-server/bin
+</code></pre>
+<p>登陆远程服务器，解压 <code class="notranslate">vscode-server-linux-x64.tar.gz</code>：</p>
+<pre class="notranslate"><code class="notranslate">cd ~/.vscode-server/bin
+tar -zxvf vscode-server-linux-x64.tar.gz
+</code></pre>
+<p>解压后将在 <code class="notranslate">~/.vscode-server/bin</code> 目录下生成 <code class="notranslate">vscode-server-linux-x64</code> 目录，将其改名为上文中得到的 vscode 的 commit id，并删除 <code class="notranslate">vscode-server-linux-x64.tar.gz</code>：</p>
+<pre class="notranslate"><code class="notranslate">mv vscode-server-linux-x64 e18005f0f1b33c29e81d732535d8c0e47cafb0b5
+rm vscode-server-linux-x64.tar.gz
+</code></pre>
+<p>在这个以 vscode commit id 命名的目录中创建名为 <code class="notranslate">0</code> 的文件：</p>
+<pre class="notranslate"><code class="notranslate">cd ~/.vscode-server/bin/e18005f0f1b33c29e81d732535d8c0e47cafb0b5
+touch 0
+</code></pre>
+<p>vscode-server 完成远程部署后不包含扩展，可将其它已安装有 vscode 的 Ubuntu 机器的 <code class="notranslate">~/.vscode</code> 目录下的 <code class="notranslate">extensions</code> 目录放到上文中创建的远程服务器的 <code class="notranslate">~/.vscode-server</code> 目录下，实现扩展离线安装，或通过下文中将提到的方法直接将本地扩展全部或部分在线安装到远程服务器。</p>
+</li>
+</ol>
+<h2>2.3 配置本地连接远程</h2>
+<ol>
+<li>
+<p>打开本地 vscode，点击左下角黄色图标打开远程窗口</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/a73e68bb3608e6b9495dcadf5b19df4f7fe61fc0442c87708205df5d0634749f/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545362538392539332545352542432538302545382542462539432545372541382538422545372541412539372545352538462541332e706e67"><img src="https://camo.githubusercontent.com/a73e68bb3608e6b9495dcadf5b19df4f7fe61fc0442c87708205df5d0634749f/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545362538392539332545352542432538302545382542462539432545372541382538422545372541412539372545352538462541332e706e67" alt="打开远程窗口" data-canonical-src="https://image.shipengx.com/%E6%89%93%E5%BC%80%E8%BF%9C%E7%A8%8B%E7%AA%97%E5%8F%A3.png" style="max-width: 100%;"></a></p>
+</li>
+<li>
+<p>连接到主机</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/36a0b0f4bef9b4a837d5366c3b1c26c8a19a5d42dc89630be424fcf8e1a2cb20/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545382542462539452545362538452541352545352538382542302545342542382542422545362539432542412e706e67"><img src="https://camo.githubusercontent.com/36a0b0f4bef9b4a837d5366c3b1c26c8a19a5d42dc89630be424fcf8e1a2cb20/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545382542462539452545362538452541352545352538382542302545342542382542422545362539432542412e706e67" alt="连接到主机" data-canonical-src="https://image.shipengx.com/%E8%BF%9E%E6%8E%A5%E5%88%B0%E4%B8%BB%E6%9C%BA.png" style="max-width: 100%;"></a></p>
+</li>
+<li>
+<p>配置 SSH 主机</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/11716fb0a9d263c2f0c4890bdd3babd4524a7ceb0e5caeec72b81560d82ac799/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545392538352538442545372542442541452532305353482532302545342542382542422545362539432542412e706e67"><img src="https://camo.githubusercontent.com/11716fb0a9d263c2f0c4890bdd3babd4524a7ceb0e5caeec72b81560d82ac799/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545392538352538442545372542442541452532305353482532302545342542382542422545362539432542412e706e67" alt="配置 SSH 主机" data-canonical-src="https://image.shipengx.com/%E9%85%8D%E7%BD%AE%20SSH%20%E4%B8%BB%E6%9C%BA.png" style="max-width: 100%;"></a></p>
+</li>
+<li>
+<p>编辑配置文件</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/729840308bf6e7e0e1cddcb8c02c9e8d0bfa008b5889dd26c42abe50c609e49d/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f254537254243253936254538254245253931254539253835253844254537254244254145254536253936253837254534254242254236253230312e706e67"><img src="https://camo.githubusercontent.com/729840308bf6e7e0e1cddcb8c02c9e8d0bfa008b5889dd26c42abe50c609e49d/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f254537254243253936254538254245253931254539253835253844254537254244254145254536253936253837254534254242254236253230312e706e67" alt="编辑配置文件 1" data-canonical-src="https://image.shipengx.com/%E7%BC%96%E8%BE%91%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%201.png" style="max-width: 100%;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/d775af7a407287aef85bfaeb3457151cf046f2e4257ef50400d7ee83a342f283/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f254537254243253936254538254245253931254539253835253844254537254244254145254536253936253837254534254242254236253230322e706e67"><img src="https://camo.githubusercontent.com/d775af7a407287aef85bfaeb3457151cf046f2e4257ef50400d7ee83a342f283/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f254537254243253936254538254245253931254539253835253844254537254244254145254536253936253837254534254242254236253230322e706e67" alt="编辑配置文件 2" data-canonical-src="https://image.shipengx.com/%E7%BC%96%E8%BE%91%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%202.png" style="max-width: 100%;"></a></p>
+</li>
+<li>
+<p>重复执行步骤 1 和步骤 2，并连接到已配置好的远程服务器</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/9ad68fe2d82004afc17ed76ecc845a4721d43e6bf028d649e3264da5efc60c2d/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545382542462539452545362538452541352545352538382542302545352542372542322545392538352538442545372542442541452545352541352542442545372539412538342545382542462539432545372541382538422545362539432538442545352538412541312545352539392541382e706e67"><img src="https://camo.githubusercontent.com/9ad68fe2d82004afc17ed76ecc845a4721d43e6bf028d649e3264da5efc60c2d/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545382542462539452545362538452541352545352538382542302545352542372542322545392538352538442545372542442541452545352541352542442545372539412538342545382542462539432545372541382538422545362539432538442545352538412541312545352539392541382e706e67" alt="连接到已配置好的远程服务器" data-canonical-src="https://image.shipengx.com/%E8%BF%9E%E6%8E%A5%E5%88%B0%E5%B7%B2%E9%85%8D%E7%BD%AE%E5%A5%BD%E7%9A%84%E8%BF%9C%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8.png" style="max-width: 100%;"></a></p>
+</li>
+<li>
+<p>在新弹出的窗口中选择远程服务器操作系统类型</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/aa70eda96ca355e81cc74fc111e7b1db27d609cc59ea418a120a1d42363cd8c1/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545392538302538392545362538422541392545382542462539432545372541382538422545362539432538442545352538412541312545352539392541382545362539332538442545342542442539432545372542332542422545372542422539462545372542312542422545352539452538422e706e67"><img src="https://camo.githubusercontent.com/aa70eda96ca355e81cc74fc111e7b1db27d609cc59ea418a120a1d42363cd8c1/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545392538302538392545362538422541392545382542462539432545372541382538422545362539432538442545352538412541312545352539392541382545362539332538442545342542442539432545372542332542422545372542422539462545372542312542422545352539452538422e706e67" alt="选择远程服务器操作系统类型" data-canonical-src="https://image.shipengx.com/%E9%80%89%E6%8B%A9%E8%BF%9C%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%B1%BB%E5%9E%8B.png" style="max-width: 100%;"></a></p>
+</li>
+<li>
+<p>输入远程服务器密码并回车，若弹出失败窗口，点击 retry 重试，再次输入密码并回车</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/f5abff90985d78cb20cb8760b3ef474d104632b3ac19dc9c1560853201385537/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545382542452539332545352538352541352545382542462539432545372541382538422545362539432538442545352538412541312545352539392541382545352541462538362545372541302538312545352542392542362545352539422539452545382542442541362e706e67"><img src="https://camo.githubusercontent.com/f5abff90985d78cb20cb8760b3ef474d104632b3ac19dc9c1560853201385537/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545382542452539332545352538352541352545382542462539432545372541382538422545362539432538442545352538412541312545352539392541382545352541462538362545372541302538312545352542392542362545352539422539452545382542442541362e706e67" alt="输入远程服务器密码并回车" data-canonical-src="https://image.shipengx.com/%E8%BE%93%E5%85%A5%E8%BF%9C%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%AF%86%E7%A0%81%E5%B9%B6%E5%9B%9E%E8%BD%A6.png" style="max-width: 100%;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/1d5959146d33a507278b9d585c2d17946a96184ae21fa177882989cd4994b5ae/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545352542372542322545362538382539302545352538412539462545382542462539452545362538452541352545382542462539432545372541382538422545362539432538442545352538412541312545352539392541382e706e67"><img src="https://camo.githubusercontent.com/1d5959146d33a507278b9d585c2d17946a96184ae21fa177882989cd4994b5ae/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545352542372542322545362538382539302545352538412539462545382542462539452545362538452541352545382542462539432545372541382538422545362539432538442545352538412541312545352539392541382e706e67" alt="已成功连接远程服务器" data-canonical-src="https://image.shipengx.com/%E5%B7%B2%E6%88%90%E5%8A%9F%E8%BF%9E%E6%8E%A5%E8%BF%9C%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8.png" style="max-width: 100%;"></a></p>
+</li>
+<li>
+<p>将本地扩展安装到远程服务器</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/b9846d9fae9eb398e92081d5a5087ce8726023d03e8aa9f7fb0f3d19337641e6/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f254535254230253836254536253943254143254535253943254230254536253839254139254535254231253935254535254145253839254538254133253835254535253838254230254538254246253943254537254138253842254536253943253844254535253841254131254535253939254138253230312e706e67"><img src="https://camo.githubusercontent.com/b9846d9fae9eb398e92081d5a5087ce8726023d03e8aa9f7fb0f3d19337641e6/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f254535254230253836254536253943254143254535253943254230254536253839254139254535254231253935254535254145253839254538254133253835254535253838254230254538254246253943254537254138253842254536253943253844254535253841254131254535253939254138253230312e706e67" alt="将本地扩展安装到远程服务器 1" data-canonical-src="https://image.shipengx.com/%E5%B0%86%E6%9C%AC%E5%9C%B0%E6%89%A9%E5%B1%95%E5%AE%89%E8%A3%85%E5%88%B0%E8%BF%9C%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8%201.png" style="max-width: 100%;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/add2a699ba65b55b22c2c060950cee92f474dfa89594c265bbf9213a5b1517a9/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f254535254230253836254536253943254143254535253943254230254536253839254139254535254231253935254535254145253839254538254133253835254535253838254230254538254246253943254537254138253842254536253943253844254535253841254131254535253939254138253230322e706e67"><img src="https://camo.githubusercontent.com/add2a699ba65b55b22c2c060950cee92f474dfa89594c265bbf9213a5b1517a9/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f254535254230253836254536253943254143254535253943254230254536253839254139254535254231253935254535254145253839254538254133253835254535253838254230254538254246253943254537254138253842254536253943253844254535253841254131254535253939254138253230322e706e67" alt="将本地扩展安装到远程服务器 2" data-canonical-src="https://image.shipengx.com/%E5%B0%86%E6%9C%AC%E5%9C%B0%E6%89%A9%E5%B1%95%E5%AE%89%E8%A3%85%E5%88%B0%E8%BF%9C%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8%202.png" style="max-width: 100%;"></a></p>
+</li>
+<li>
+<p>打开远程工作目录</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/2e1d2d49b4587cead80b3922316a920a0c1f58ec405572b06c47e57d572154bb/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f254536253839253933254535254243253830254538254246253943254537254138253842254535254237254135254534254244253943254537253942254145254535254244253935253230312e706e67"><img src="https://camo.githubusercontent.com/2e1d2d49b4587cead80b3922316a920a0c1f58ec405572b06c47e57d572154bb/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f254536253839253933254535254243253830254538254246253943254537254138253842254535254237254135254534254244253943254537253942254145254535254244253935253230312e706e67" alt="打开远程工作目录 1" data-canonical-src="https://image.shipengx.com/%E6%89%93%E5%BC%80%E8%BF%9C%E7%A8%8B%E5%B7%A5%E4%BD%9C%E7%9B%AE%E5%BD%95%201.png" style="max-width: 100%;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/1c954250c7c0b0f606589f9fbacd007c7747890bdc8efe6d6eb2806f12eea767/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f254536253839253933254535254243253830254538254246253943254537254138253842254535254237254135254534254244253943254537253942254145254535254244253935253230322e706e67"><img src="https://camo.githubusercontent.com/1c954250c7c0b0f606589f9fbacd007c7747890bdc8efe6d6eb2806f12eea767/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f254536253839253933254535254243253830254538254246253943254537254138253842254535254237254135254534254244253943254537253942254145254535254244253935253230322e706e67" alt="打开远程工作目录 2" data-canonical-src="https://image.shipengx.com/%E6%89%93%E5%BC%80%E8%BF%9C%E7%A8%8B%E5%B7%A5%E4%BD%9C%E7%9B%AE%E5%BD%95%202.png" style="max-width: 100%;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/389278bcdcc5f3004e57b71686278636fd8841d8741696f3f6ea7769fb0824a5/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545352538362538442545362541432541312545382542452539332545352538352541352545382542462539432545372541382538422545362539432538442545352538412541312545352539392541382545352541462538362545372541302538312545352542392542362545352539422539452545382542442541362e706e67"><img src="https://camo.githubusercontent.com/389278bcdcc5f3004e57b71686278636fd8841d8741696f3f6ea7769fb0824a5/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545352538362538442545362541432541312545382542452539332545352538352541352545382542462539432545372541382538422545362539432538442545352538412541312545352539392541382545352541462538362545372541302538312545352542392542362545352539422539452545382542442541362e706e67" alt="再次输入远程服务器密码并回车" data-canonical-src="https://image.shipengx.com/%E5%86%8D%E6%AC%A1%E8%BE%93%E5%85%A5%E8%BF%9C%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%AF%86%E7%A0%81%E5%B9%B6%E5%9B%9E%E8%BD%A6.png" style="max-width: 100%;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/1a83033e245054ce2de4509bbcd033ffd36f02b67e23e5280a151025ac827d3d/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545342542462541312545342542422542422545362538392539332545352542432538302545372539412538342545352542372541352545342542442539432545372539422541452545352542442539352e706e67"><img src="https://camo.githubusercontent.com/1a83033e245054ce2de4509bbcd033ffd36f02b67e23e5280a151025ac827d3d/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545342542462541312545342542422542422545362538392539332545352542432538302545372539412538342545352542372541352545342542442539432545372539422541452545352542442539352e706e67" alt="信任打开的工作目录" data-canonical-src="https://image.shipengx.com/%E4%BF%A1%E4%BB%BB%E6%89%93%E5%BC%80%E7%9A%84%E5%B7%A5%E4%BD%9C%E7%9B%AE%E5%BD%95.png" style="max-width: 100%;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/231ccce06be3562edf3c572c088bce7dd0e03ab68b0a25f736e9a51a0ffa1f25/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545352542372542322545362538382539302545352538412539462545382542462539452545362538452541352545352538382542302545382542462539432545372541382538422545362539432538442545352538412541312545352539392541382545352542392542362545362538392539332545352542432538302545352542372541352545342542442539432545372539422541452545352542442539352545462542432538432545352538462541462545342542422541352545352542432538302545352541372538422545382542462539432545372541382538422545352542432538302545352538462539312e706e67"><img src="https://camo.githubusercontent.com/231ccce06be3562edf3c572c088bce7dd0e03ab68b0a25f736e9a51a0ffa1f25/68747470733a2f2f696d6167652e73686970656e67782e636f6d2f2545352542372542322545362538382539302545352538412539462545382542462539452545362538452541352545352538382542302545382542462539432545372541382538422545362539432538442545352538412541312545352539392541382545352542392542362545362538392539332545352542432538302545352542372541352545342542442539432545372539422541452545352542442539352545462542432538432545352538462541462545342542422541352545352542432538302545352541372538422545382542462539432545372541382538422545352542432538302545352538462539312e706e67" alt="已成功连接到远程服务器并打开工作目录，可以开始远程开发" data-canonical-src="https://image.shipengx.com/%E5%B7%B2%E6%88%90%E5%8A%9F%E8%BF%9E%E6%8E%A5%E5%88%B0%E8%BF%9C%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%B9%B6%E6%89%93%E5%BC%80%E5%B7%A5%E4%BD%9C%E7%9B%AE%E5%BD%95%EF%BC%8C%E5%8F%AF%E4%BB%A5%E5%BC%80%E5%A7%8B%E8%BF%9C%E7%A8%8B%E5%BC%80%E5%8F%91.png" style="max-width: 100%;"></a></p>
+</li>
+</ol>
+<h2>2.4 配置 SSH 免密登陆</h2>
+<p>完成上述步骤后，我们已经可以实现快速远程开发的需求，但每次登陆远程或由于网络不稳定导致重连都会要求我们输入远程的登陆密码，不免麻烦。由于本地 vscode 与远程 vscode-server 的连接走的是 SSH 协议，因此我们可以通过配置 SSH 免密登陆来省去所有要求输入密码的过程。</p>
+<ol>
+<li>
+<p>生成 SSH 密钥对（若不存在得话）</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">ssh-keygen -C <span class="pl-s"><span class="pl-pds">"</span>your email address<span class="pl-pds">"</span></span></pre></div>
+<p>生成的密钥对被保存在本地的 <code class="notranslate">C:\Users\你的用户名\.ssh</code> 目录下，生成的密钥对包括私钥 <code class="notranslate">id_rsa</code> 和公钥 <code class="notranslate">id_rsa.pub</code>，我们需要将公钥中的内容添加到远程服务器。</p>
+</li>
+<li>
+<p>将 SSH 公钥添加到远程服务器</p>
+<pre lang="plaintext" class="notranslate"><code class="notranslate">ssh-copy-id user_name@server_ip
+</code></pre>
+<p>输入上述命令以及远程服务器的登陆密码，将在远程服务器的 <code class="notranslate">~/.ssh</code> 目录下创建 <code class="notranslate">authorized_keys</code> 文件（若不存在得话），并将本地 SSH 公钥中的内容添加到该文件中。此后，任何从本地发起的指向远程服务器的 SSH 连接请求（如登陆、scp 文件传输等）将不再需要输入登陆密码。</p>
+</li>
+</ol>
+<h1>3 总结</h1>
+<p>通过本地 vscode + Remote-SSH 插件 + 远程 vscode-server 的配置，可以实现在远程服务器上进行开发，并将代码可视化放到本地进行编辑，提高开发效率。此外，还可以通过安装扩展将本地的开发环境完整迁移到远程服务器上，保持一致的开发环境。</p>
+<p>需要注意的是，远程开发时需要保持网络连接和 VPN 连接（若远程服务器在内网），以确保正常的开发和调试工作。同时，根据实际情况，可根据上述步骤配置多个远程服务器，方便不同环境下的开发工作。</p></div>
+<div style="font-size:small;margin-top:8px;float:right;">❤️ 转载文章请注明出处，谢谢！❤️</div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer">Copyright © <span id="year"></span> <a href="https://fxxsj.github.io">夜幕下的星光</a>
+<p><a href="https://beian.miit.gov.cn/" target="_blank">浙ICP备20243628号</a>
+<span id="runday"></span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a>
+</p>
+
+<script>
+if("03/30/2024"!=""){
+    var now=new Date();
+    var startSite=new Date("03/30/2024");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("year").innerHTML=now.getFullYear();
+    if("浙ICP备20243628号"!=""){document.getElementById("runday").innerHTML=" • "+"网站运行"+diffDay+"天"+" • ";}
+    else{document.getElementById("runday").innerHTML="网站运行"+diffDay+"天"+" • ";}
+}
+</script>
+</div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek main https://github.com/Meekdai/Gmeek \n\n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","fxxsj/fxxsj.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+</script>
+
+
+</html>
