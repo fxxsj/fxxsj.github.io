@@ -196,3 +196,4 @@ systemctl restart postfix dovecot
 
 ### 鸣谢
 本文摘录自 https://v2rayssr.com/ewomail.html
+官方文档 http://doc.ewomail.com/docs/ewomail/jianjie
