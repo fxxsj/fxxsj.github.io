@@ -50,7 +50,7 @@ curl -O https://raw.githubusercontent.com/stilleshan/code/main/shell/swap.sh && 
 3. 设置 VPS 主机名
 找到 VPS 文件：`/etc/hostname`
 
-修改里面的内容为 `Mail`
+修改里面的内容为 `mail` ,建议一定要用小写，我觉得如果后面出现`域不允许`与此有关。
 
 找到 VPS 文件：`/etc/hosts`
 
@@ -173,6 +173,11 @@ export CF_Email="xxx@xxx.com"                 # CF 的用户名
 ```
 ```
 ~/.acme.sh/acme.sh --issue --dns dns_cf -d *.baidu.com
+
+# 执行此命令时，可能会报错
+# 你需要在cf中手动添加txt解析
+# Adding TXT value: 7zAfdmdxUwe0moTXZ-4VvT4uOtWGnsi94-AHKEe97T4 for domain: _acme-challenge.baidu.com
+
 ```
 ```
 ~/.acme.sh/acme.sh --installcert -d *.baidu.com --key-file /etc/ssl/private/dovecot.pem --fullchain-file /etc/ssl/certs/dovecot.pem
@@ -183,7 +188,8 @@ service nginx restart
 ```
 systemctl restart postfix dovecot
 ```
-重启之后，刷新邮局，或是访问 https://mail.xxx.xxx:8000，这样就会开启 SSL 的访问。
+
+重启之后，刷新邮局，或是访问` https://mail.xxx.xxx:8000`，这样就会开启 SSL 的访问。
 
 2. 邮局后台开启 SSL 访问
 和刚才一样，找到`/ewomail/nginx/conf/vhost/ewomail-admin-ssl.conf`  替换 `/ewomail/nginx/conf/vhost/ewomail-admin.conf `文件，特别需要注意里面的端口！

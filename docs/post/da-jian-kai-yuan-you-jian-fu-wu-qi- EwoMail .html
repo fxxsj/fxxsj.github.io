@@ -129,7 +129,7 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 <li>设置 VPS 主机名<br>
 找到 VPS 文件：<code class="notranslate">/etc/hostname</code></li>
 </ol>
-<p>修改里面的内容为 <code class="notranslate">Mail</code></p>
+<p>修改里面的内容为 <code class="notranslate">mail</code> ,建议一定要用小写，我觉得如果后面出现<code class="notranslate">域不允许</code>与此有关。</p>
 <p>找到 VPS 文件：<code class="notranslate">/etc/hosts</code></p>
 <p>添加以下内容：</p>
 <pre class="notranslate"><code class="notranslate">127.0.0.1 mail.xxx.com smtp.xxx.com imap.xxx.com mail
@@ -226,6 +226,11 @@ v=DMARC1; p=none;           #DMARC 记录值
 <pre class="notranslate"><code class="notranslate">~/.acme.sh/acme.sh --register-account -m xxx@xxx.com
 </code></pre>
 <pre class="notranslate"><code class="notranslate">~/.acme.sh/acme.sh --issue --dns dns_cf -d *.baidu.com
+
+# 执行此命令时，可能会报错
+# 你需要在cf中手动添加txt解析
+# Adding TXT value: 7zAfdmdxUwe0moTXZ-4VvT4uOtWGnsi94-AHKEe97T4 for domain: _acme-challenge.baidu.com
+
 </code></pre>
 <pre class="notranslate"><code class="notranslate">~/.acme.sh/acme.sh --installcert -d *.baidu.com --key-file /etc/ssl/private/dovecot.pem --fullchain-file /etc/ssl/certs/dovecot.pem
 </code></pre>
@@ -233,7 +238,7 @@ v=DMARC1; p=none;           #DMARC 记录值
 </code></pre>
 <pre class="notranslate"><code class="notranslate">systemctl restart postfix dovecot
 </code></pre>
-<p>重启之后，刷新邮局，或是访问 <a href="https://mail.xxx.xxx:8000%EF%BC%8C%E8%BF%99%E6%A0%B7%E5%B0%B1%E4%BC%9A%E5%BC%80%E5%90%AF" rel="nofollow">https://mail.xxx.xxx:8000，这样就会开启</a> SSL 的访问。</p>
+<p>重启之后，刷新邮局，或是访问<code class="notranslate"> https://mail.xxx.xxx:8000</code>，这样就会开启 SSL 的访问。</p>
 <ol start="2">
 <li>邮局后台开启 SSL 访问<br>
 和刚才一样，找到<code class="notranslate">/ewomail/nginx/conf/vhost/ewomail-admin-ssl.conf</code>  替换 <code class="notranslate">/ewomail/nginx/conf/vhost/ewomail-admin.conf </code>文件，特别需要注意里面的端口！</li>
