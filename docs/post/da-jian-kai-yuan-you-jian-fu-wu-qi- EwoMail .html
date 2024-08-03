@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark_colorblind" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    
+    <link rel="icon" href="https://github.githubassets.com/favicons/favicon.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="### 前言
+这个项目需要全新的服务器，这样会少点错误。">
+<meta property="og:title" content="搭建开源邮件服务器 EwoMail ">
+<meta property="og:description" content="### 前言
+这个项目需要全新的服务器，这样会少点错误。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://fxxsj.github.io/post/da-jian-kai-yuan-you-jian-fu-wu-qi-%20EwoMail%20.html">
+<meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
+<title>搭建开源邮件服务器 EwoMail </title>
+
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+.copy-feedback {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 50px;
+    color: var(--color-fg-on-emphasis);
+    background-color: var(--color-fg-muted);
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-size: 12px;
+}
+</style>
+
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">搭建开源邮件服务器 EwoMail </h1>
+<div class="title-right">
+    <a href="https://fxxsj.github.io" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/fxxsj/fxxsj.github.io/issues/16" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><h3>前言</h3>
+<p>这个项目需要全新的服务器，这样会少点错误。</p>
+<p>首先一键DD系统，使用的是以下项目 <a href="https://github.com/bin456789/reinstall">https://github.com/bin456789/reinstall</a></p>
+<ol>
+<li>下载脚本</li>
+</ol>
+<pre class="notranslate"><code class="notranslate">curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh
+</code></pre>
+<ol start="2">
+<li>运行脚本DD  centos 9</li>
+</ol>
+<pre class="notranslate"><code class="notranslate">bash reinstall.sh centos 9
+</code></pre>
+<p>使用debian 11 系统无法执行安装脚本，重新DD centos 9，然后发现这个项目仅适用于centos 7/8，只好后台重装。</p>
+<ol start="3">
+<li>重启服务器</li>
+</ol>
+<pre class="notranslate"><code class="notranslate">reboot
+</code></pre>
+<h3>一、添加 PTR 记录</h3>
+<p>趁着这空闲，在服务商里设置一下ptr记录。<br>
+找到 VPS 后台，找到类似 <code class="notranslate">PTR Records</code>、<code class="notranslate">Reverse DNS</code> 等类似关键词的选项，设置反向解析。<br>
+<a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/14a18776-321d-437b-8590-942e48bc04e6"><img src="https://github.com/user-attachments/assets/14a18776-321d-437b-8590-942e48bc04e6" alt="image" style="max-width: 100%;"></a></p>
+<h3>二、设置 VPS</h3>
+<ol>
+<li>关闭 Selinux</li>
+</ol>
+<p>找到 VPS 文件 <code class="notranslate">/etc/sysconfig/selinux</code></p>
+<p>找到<code class="notranslate"> SELINUX=enforcing</code> 改为 <code class="notranslate">SELINUX=disabled</code></p>
+<p>我这台本身就是关闭，但还检查一下好点。</p>
+<ol start="2">
+<li>设置 Swap 分区<br>
+用的是低配小鸡，执行以下脚本</li>
+</ol>
+<pre class="notranslate"><code class="notranslate">yum update
+</code></pre>
+<pre class="notranslate"><code class="notranslate">yum install curl
+</code></pre>
+<pre class="notranslate"><code class="notranslate">curl -O https://raw.githubusercontent.com/stilleshan/code/main/shell/swap.sh &amp;&amp; chmod +x swap.sh &amp;&amp; ./swap.sh
+</code></pre>
+<ol start="3">
+<li>设置 VPS 主机名<br>
+找到 VPS 文件：<code class="notranslate">/etc/hostname</code></li>
+</ol>
+<p>修改里面的内容为 <code class="notranslate">Mail</code></p>
+<p>找到 VPS 文件：<code class="notranslate">/etc/hosts</code></p>
+<p>添加以下内容：</p>
+<pre class="notranslate"><code class="notranslate">127.0.0.1 mail.xxx.com smtp.xxx.com imap.xxx.com mail
+
+# xxx.com 改为你的邮箱的主域名
+</code></pre>
+<p>至此，VPS 的设置完毕！</p>
+<h3>三、安装 EwoMail</h3>
+<ol>
+<li>安装相关组件</li>
+</ol>
+<pre class="notranslate"><code class="notranslate">yum  install wget
+</code></pre>
+<ol start="2">
+<li>查找安装命令<br>
+打开 <a href="http://www.ewomail.com/list-11.html" rel="nofollow">这个网站</a> ，在里面填入你的域名（主域名），获取自动安装代码<br>
+<a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/9e0fe5f7-785d-47b0-84a3-0f61be147f73"><img src="https://github.com/user-attachments/assets/9e0fe5f7-785d-47b0-84a3-0f61be147f73" alt="image" style="max-width: 100%;"></a></li>
+</ol>
+<pre class="notranslate"><code class="notranslate">wget -c https://down.ewomail.com/install-04.sh &amp;&amp; sh install-04.sh baidu.com
+</code></pre>
+<ol start="3">
+<li>安装完成请注意<br>
+若是你的 VPS 内存非常小，比如 512M，安装完毕以后，请立即执行：<code class="notranslate">systemctl stop clamd@amavisd</code> ，马上关闭杀毒软件，不然 VPS 很大概率无法响应！</li>
+</ol>
+<p>安装 EwoMail 以后，会默认开启系统的防火墙，并开启以下的常用端口：</p>
+<pre class="notranslate"><code class="notranslate">8000/tcp 8010/tcp 7000/tcp 7010/tcp 8020/tcp 993/tcp 995/tcp 
+587/tcp 465/tcp 143/tcp 110/tcp 25/tcp 22/tcp 80/tcp 443/tcp
+</code></pre>
+<p>若是 SSH 登录端口并非 22 端口，或是其他软件需要放行端口，请参阅以下命令：</p>
+<pre class="notranslate"><code class="notranslate">systemctl status firewalld   #状态
+systemctl start firewalld  # 启动
+systemctl stop firewalld   # 关闭
+firewall-cmd --zone=public --list-ports       # 查看所有打开的端口
+firewall-cmd --zone=public --add-port=80/tcp --permanent    # 永久开启80端口
+firewall-cmd --reload      #重新载入防火墙
+</code></pre>
+<p>查看安装的域名和数据库密码（由于后期邮局数据的备份！！！！！）</p>
+<pre class="notranslate"><code class="notranslate">cat /ewomail/config.ini
+</code></pre>
+<ol start="4">
+<li>设置 EwoMail<br>
+关闭邮件杀毒软件，可以有效的降低内存的占用，关闭后不影响垃圾邮件的检测。当然你的 VPS 内存大于 4G，可以忽略！</li>
+</ol>
+<p>找到 VPS 文件：<code class="notranslate">/etc/amavisd/amavisd.conf</code></p>
+<p>在文件的最尾部加入以下代码：</p>
+<pre class="notranslate"><code class="notranslate">@bypass_virus_checks_maps = (1);
+</code></pre>
+<p>找到 VPS 文件：<code class="notranslate">/usr/lib/systemd/system/amavisd.service</code></p>
+<p>在文件中找到 <code class="notranslate">Wants=clamd@amavisd.service</code> ，在前面加上 # 符号，注释掉这行代码</p>
+<p>修改并保存完毕以后，依次在 VPS 执行以下命令：</p>
+<pre class="notranslate"><code class="notranslate">systemctl daemon-reload
+systemctl stop clamd@amavisd
+systemctl disable clamd@amavisd
+systemctl restart amavisd
+</code></pre>
+<h3>四、域名解析</h3>
+<ol>
+<li>整理 DKIM 信息</li>
+</ol>
+<p>SSH 界面，输入以下命令：</p>
+<pre class="notranslate"><code class="notranslate">amavisd -c /etc/amavisd/amavisd.conf showkeys
+</code></pre>
+<p>复制下图中红色框中内容<br>
+<a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/d3b18488-9443-4a6b-a749-306274ef6db6"><img src="https://github.com/user-attachments/assets/d3b18488-9443-4a6b-a749-306274ef6db6" alt="image" style="max-width: 100%;"></a></p>
+<p>打开 <a href="http://www.ewomail.com/list-20.html" rel="nofollow">这个网站</a> ，整理 DKIM 信息。<br>
+<a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/5269f403-dcc8-445f-a177-5d30ec76f3e1"><img src="https://github.com/user-attachments/assets/5269f403-dcc8-445f-a177-5d30ec76f3e1" alt="image" style="max-width: 100%;"></a><br>
+记录整理过的 DKIM 信息，解析的时候会用到！</p>
+<ol start="2">
+<li>添加解析记录</li>
+</ol>
+<p>来到 CF DNS 的解析页面，添加如下解析：（必须关闭黄色小云朵 – 代理状态关闭）,共计 八项 解析记录<br>
+<a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/b11d315d-274e-45ef-a1a2-12373942bc2f"><img src="https://github.com/user-attachments/assets/b11d315d-274e-45ef-a1a2-12373942bc2f" alt="image" style="max-width: 100%;"></a></p>
+<p>需要的字符串：</p>
+<pre class="notranslate"><code class="notranslate">v=spf1 ip4:127.0.0.1 -all   #SPF 记录值 127.0.0.1 改为你的 VPS IP
+dkim._domainkey             #DKIM 记录名称
+_dmarc                      #DMARC 记录名称
+v=DMARC1; p=none;           #DMARC 记录值
+</code></pre>
+<h3>五、开启 SSL 访问和发送</h3>
+<ol>
+<li>邮局前台开启 SSL 访问<br>
+找到 VPS 文件 <code class="notranslate">/ewomail/nginx/conf/vhost/rainloop.conf</code>  ，改个名字，备份它！</li>
+</ol>
+<p>找到 VPS 文件<code class="notranslate"> /ewomail/nginx/conf/vhost/rainloop.conf.ssl</code> ，改名为<code class="notranslate"> rainloop.conf</code></p>
+<p>依次执行下面命令</p>
+<pre class="notranslate"><code class="notranslate">yum install -y curl socat
+</code></pre>
+<pre class="notranslate"><code class="notranslate">curl https://get.acme.sh | sh
+</code></pre>
+<pre class="notranslate"><code class="notranslate">export CF_Key="请复制KEY到这里，不要删除引号"      # 设置 CF KEY
+</code></pre>
+<pre class="notranslate"><code class="notranslate">export CF_Email="xxx@xxx.com"                 # CF 的用户名
+</code></pre>
+<pre class="notranslate"><code class="notranslate">~/.acme.sh/acme.sh --register-account -m xxx@xxx.com
+</code></pre>
+<pre class="notranslate"><code class="notranslate">~/.acme.sh/acme.sh --issue --dns dns_cf -d *.baidu.com
+</code></pre>
+<pre class="notranslate"><code class="notranslate">~/.acme.sh/acme.sh --installcert -d *.baidu.com --key-file /etc/ssl/private/dovecot.pem --fullchain-file /etc/ssl/certs/dovecot.pem
+</code></pre>
+<pre class="notranslate"><code class="notranslate">service nginx restart
+</code></pre>
+<pre class="notranslate"><code class="notranslate">systemctl restart postfix dovecot
+</code></pre>
+<p>重启之后，刷新邮局，或是访问 <a href="https://mail.xxx.xxx:8000%EF%BC%8C%E8%BF%99%E6%A0%B7%E5%B0%B1%E4%BC%9A%E5%BC%80%E5%90%AF" rel="nofollow">https://mail.xxx.xxx:8000，这样就会开启</a> SSL 的访问。</p>
+<ol start="2">
+<li>邮局后台开启 SSL 访问<br>
+和刚才一样，找到<code class="notranslate">/ewomail/nginx/conf/vhost/ewomail-admin-ssl.conf</code>  替换 <code class="notranslate">/ewomail/nginx/conf/vhost/ewomail-admin.conf </code>文件，特别需要注意里面的端口！</li>
+</ol>
+<h3>六、EwoMail 最后的设置</h3>
+<ol>
+<li>检查服务</li>
+</ol>
+<p>分别打开<code class="notranslate"> https://mail.xxx.xxx:7010</code>（管理后台账号: <code class="notranslate">admin</code> 密码：<code class="notranslate">ewomail123</code>） 和 <code class="notranslate">https://mail.xxx.xxx:8000 </code>（邮局前台，账号密码在后台创建），看服务是否正常</p>
+<h3>鸣谢</h3>
+<p>本文摘录自 <a href="https://v2rayssr.com/ewomail.html" rel="nofollow">https://v2rayssr.com/ewomail.html</a></p></div>
+<div style="font-size:small;margin-top:8px;float:right;">❤️ 转载文章请注明出处，谢谢！❤️</div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://fxxsj.github.io">夜幕下的星光</a></div>
+<div id="footer2"><span id="filingNum"><a href="https://beian.miit.gov.cn/" target="_blank">浙ICP备20243628号</a> • </span>
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("03/30/2024"!=""){
+    var startSite=new Date("03/30/2024");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行"+diffDay+"天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z', 'copy': 'M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z', 'check': 'M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek main https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","fxxsj/fxxsj.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const createClipboardHTML = (codeContent, additionalClasses = '') => `
+        <pre class="notranslate"><code class="notranslate">${codeContent}</code></pre>
+        <div class="clipboard-container position-absolute right-0 top-0 ${additionalClasses}">
+            <clipboard-copy class="ClipboardButton btn m-2 p-0" role="button" style="display: inherit;">
+                <svg height="16" width="16" class="octicon octicon-copy m-2"><path d="${IconList["copy"]}"></path></svg>
+                <svg height="16" width="16" class="octicon octicon-check color-fg-success m-2 d-none"><path d="${IconList["check"]}"></path></svg>
+            </clipboard-copy>
+            <div class="copy-feedback">Copied!</div>
+        </div>
+    `;
+
+    const handleCodeElements = (selector = '') => {
+        document.querySelectorAll(selector).forEach(codeElement => {
+            const codeContent = codeElement.innerHTML;
+            const newStructure = document.createElement('div');
+            newStructure.className = 'snippet-clipboard-content position-relative overflow-auto';
+            newStructure.innerHTML = createClipboardHTML(codeContent);
+
+            const parentElement = codeElement.parentElement;
+            if (selector.includes('highlight')) {
+                parentElement.insertBefore(newStructure, codeElement.nextSibling);
+                parentElement.removeChild(codeElement);
+            } else {
+                parentElement.parentElement.replaceChild(newStructure, parentElement);
+            }
+        });
+    };
+
+    handleCodeElements('pre.notranslate > code.notranslate');
+    handleCodeElements('div.highlight > pre.notranslate');
+
+    let currentFeedback = null;
+    document.querySelectorAll('clipboard-copy').forEach(copyButton => {
+        copyButton.addEventListener('click', () => {
+            const codeContent = copyButton.closest('.snippet-clipboard-content').innerText;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = codeContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            const copyIcon = copyButton.querySelector('.octicon-copy');
+            const checkIcon = copyButton.querySelector('.octicon-check');
+            const copyFeedback = copyButton.nextElementSibling;
+
+            if (currentFeedback && currentFeedback !== copyFeedback) {currentFeedback.style.display = 'none';}
+            currentFeedback = copyFeedback;
+
+            copyIcon.classList.add('d-none');
+            checkIcon.classList.remove('d-none');
+            copyFeedback.style.display = 'block';
+            copyButton.style.borderColor = 'var(--color-success-fg)';
+
+            setTimeout(() => {
+                copyIcon.classList.remove('d-none');
+                checkIcon.classList.add('d-none');
+                copyFeedback.style.display = 'none';
+                copyButton.style.borderColor = '';
+            }, 2000);
+        });
+    });
+});
+
+</script>
+
+
+</html>
