@@ -179,6 +179,8 @@ export CF_Email="xxx@xxx.com"                 # CF 的用户名
 # Adding TXT value: 7zAfdmdxUwe0moTXZ-4VvT4uOtWGnsi94-AHKEe97T4 for domain: _acme-challenge.baidu.com
 
 ```
+![image](https://github.com/user-attachments/assets/841a9a2a-f1e7-4f08-8eab-c3f5bfc66349)
+
 ```
 ~/.acme.sh/acme.sh --installcert -d *.baidu.com --key-file /etc/ssl/private/dovecot.pem --fullchain-file /etc/ssl/certs/dovecot.pem
 ```
