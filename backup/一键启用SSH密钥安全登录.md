@@ -12,16 +12,47 @@ https://github.com/KiritoMiao/SSHKEY_Installer
 
 ### 准备
 
-#### 首先我们需要生成一对密钥，通过Xshell生成是最简便的方式。
+#### 生成SSH密钥
+   首先，您需要通过运行以下命令来生成SSH密钥对：
+ ```
+   ssh-keygen -t rsa -b 4096 -C “your_email@example.com”
+```
+该命令将生成一对密钥：私钥（`id_rsa`）和公钥（`id_rsa.pub`）。默认情况下，它们将保存在`.ssh`目录中。
 
-点击工具→用户密钥管理者→生成。
-![](/img/jiaocheng/shell.png)
-私钥我们需要妥善保存，不能传播出去，将公钥复制，导入Github中：https://github.com/settings/keys
+#### 添加公钥到GitHub账户
+登录GitHub账户后，导航到[“Settings”（设置）页面](https://github.com/settings/keys)。
+然后点击`SSH and GPG keys`（SSH和GPG密钥）选项卡。选择`New SSH key`（新建SSH密钥），将公钥内容复制粘贴到`Key`（密钥）文本框中，并为这个密钥提供一个描述性的标题。最后，点击`Add SSH key`（添加SSH密钥）按钮。
 
-#### 接下来我们运行脚本即可。
+#### 同步密钥到其他设备
+   现在你已经在一个设备上生成了SSH密钥并将公钥添加到了GitHub账户中。要同步到其他设备，只需要将私钥（`id_rsa`）和公钥（`id_rsa.pub`）（可选）复制到其他设备中`.ssh`文件夹下，并配置好GitHub账户即可。
+
+#### 配置GitHub账户
+   在其他设备上配置GitHub账户，首次使用Git进行操作时需要进行配置。打开终端或命令行工具，输入以下命令：
+```
+   git config –global user.name “Your Name”
+   git config –global user.email “your_email@example.com”
+```
+   其中，”Your Name”和”your_email@example.com”需要替换成你在GitHub上注册的用户名和邮箱。
+
+至此，你已经成功同步了GitHub密钥。通过这种方法，你可以在不同的设备上使用相同的密钥进行GitHub操作，避免了重复生成和配置密钥的麻烦。
+
+#### 测试连接
+    最后，您可以通过运行以下命令来测试SSH连接是否正常工作：
+```
+   ssh -T git@github.com
+```
+ 如果您正确同步了GitHub密钥，您将收到一条消息
+```
+“Hi {username}! You’ve successfully authenticated, but GitHub does not provide shell access.”
+（你好{用户名}！您已成功进行身份验证，但GitHub不提供shell访问。）
+```
+
+### 免密登录
+接下来在vps上运行脚本即可实现免密登录。
 
 ```
-wget https://github.com/garhing/SSHKEY_Installer/raw/master/key.sh --no-check-certificate&& bash key.sh [你的Github用户名]
+wget https://github.com/fxxsj/SSHKEY_Installer/raw/master/key.sh --no-check-certificate&& bash key.sh fxxsj 
+
 ```
 
 ### 总结
@@ -29,7 +60,9 @@ wget https://github.com/garhing/SSHKEY_Installer/raw/master/key.sh --no-check-ce
 开启方法非常简单，平时登陆也免除了输入密码的烦恼。
 
 ### 版权声明
+本文参考
+>博客[就是爱生活](https://www.94ish.me/1966.html)。
 
->本文转载自博客[就是爱生活](https://www.94ish.me/1966.html)。
->
+> https://worktile.com/kb/ask/525351.html
+
 > 感谢原作者，以及开源世界。
