@@ -10,18 +10,18 @@
         let theme = localStorage.getItem("meek_theme") || "light";
         document.documentElement.setAttribute("data-color-mode", theme);
     </script>
-<meta name="description" content="### 前言
+<meta name="description" content="## 什么是 EFB？为什么要用 Docker？
 
-使用VPS时，经常会遇到SSH爆破，一旦我们使用弱密码，无形中产生很多安全隐患。">
-<meta property="og:title" content="一键启用SSH密钥安全登录">
-<meta property="og:description" content="### 前言
+EFB (EhForwarderBot) 是一个强大的工具，可以帮你把微信消息转发到 Telegram 等其他聊天平台，也可以让你在 Telegram 里直接回复微信消息。">
+<meta property="og:title" content="使用 Docker 轻松运行 EFB (EhForwarderBot)">
+<meta property="og:description" content="## 什么是 EFB？为什么要用 Docker？
 
-使用VPS时，经常会遇到SSH爆破，一旦我们使用弱密码，无形中产生很多安全隐患。">
+EFB (EhForwarderBot) 是一个强大的工具，可以帮你把微信消息转发到 Telegram 等其他聊天平台，也可以让你在 Telegram 里直接回复微信消息。">
 <meta property="og:type" content="article">
-<meta property="og:url" content="https://fxxsj.github.io/post/yi-jian-qi-yong-SSH-mi-yao-an-quan-deng-lu.html">
+<meta property="og:url" content="https://fxxsj.github.io/post/shi-yong-%20Docker%20-qing-song-yun-xing-%20EFB%20%28EhForwarderBot%29.html">
 <meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
-<title>一键启用SSH密钥安全登录</title>
-
+<title>使用 Docker 轻松运行 EFB (EhForwarderBot)</title>
+<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
 
 
 </head>
@@ -63,7 +63,7 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 
 <body>
     <div id="header">
-<h1 class="postTitle">一键启用SSH密钥安全登录</h1>
+<h1 class="postTitle">使用 Docker 轻松运行 EFB (EhForwarderBot)</h1>
 <div class="title-right">
     <a href="https://fxxsj.github.io" id="buttonHome" class="btn btn-invisible circle" title="首页">
         <svg class="octicon" width="16" height="16">
@@ -71,7 +71,7 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
         </svg>
     </a>
     
-    <a href="https://github.com/fxxsj/fxxsj.github.io/issues/8" target="_blank" class="btn btn-invisible circle" title="Issue">
+    <a href="https://github.com/fxxsj/fxxsj.github.io/issues/19" target="_blank" class="btn btn-invisible circle" title="Issue">
         <svg class="octicon" width="16" height="16">
             <path id="pathIssue" fill-rule="evenodd"></path>
         </svg>
@@ -87,57 +87,160 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 </div>
 </div>
     <div id="content">
-<div class="markdown-body" id="postBody"><h3>前言</h3>
-<p>使用VPS时，经常会遇到SSH爆破，一旦我们使用弱密码，无形中产生很多安全隐患。为了用户以及个人的信息安全，我推荐大家启用密钥登陆，同时关闭密码登陆。</p>
-<p>其实强密码也可以达到密钥登陆的安全性，不过强密码带来的不便远远大于密钥方式，同时通过一键脚本开启密钥登陆比修改密码更快捷。</p>
-<h3>脚本来源</h3>
-<pre class="notranslate"><code class="notranslate">https://github.com/KiritoMiao/SSHKEY_Installer
-</code></pre>
-<h3>准备</h3>
-<h4>生成SSH密钥</h4>
-<p>首先，您需要通过运行以下命令来生成SSH密钥对：</p>
-<pre class="notranslate"><code class="notranslate">  ssh-keygen -t rsa -b 4096 -C “your_email@example.com”
-</code></pre>
-<p>该命令将生成一对密钥：私钥（<code class="notranslate">id_rsa</code>）和公钥（<code class="notranslate">id_rsa.pub</code>）。默认情况下，它们将保存在<code class="notranslate">.ssh</code>目录中。</p>
-<h4>添加公钥到GitHub账户</h4>
-<p>登录GitHub账户后，导航到<a href="https://github.com/settings/keys">“Settings”（设置）页面</a>。<br>
-然后点击<code class="notranslate">SSH and GPG keys</code>（SSH和GPG密钥）选项卡。选择<code class="notranslate">New SSH key</code>（新建SSH密钥），将公钥内容复制粘贴到<code class="notranslate">Key</code>（密钥）文本框中，并为这个密钥提供一个描述性的标题。最后，点击<code class="notranslate">Add SSH key</code>（添加SSH密钥）按钮。</p>
-<h4>同步密钥到其他设备</h4>
-<p>现在你已经在一个设备上生成了SSH密钥并将公钥添加到了GitHub账户中。要同步到其他设备，只需要将私钥（<code class="notranslate">id_rsa</code>）和公钥（<code class="notranslate">id_rsa.pub</code>）（可选）复制到其他设备中<code class="notranslate">.ssh</code>文件夹下，并配置好GitHub账户即可。</p>
-<h4>配置GitHub账户</h4>
-<p>在其他设备上配置GitHub账户，首次使用Git进行操作时需要进行配置。打开终端或命令行工具，输入以下命令：</p>
-<pre class="notranslate"><code class="notranslate">   git config –global user.name “Your Name”
-   git config –global user.email “your_email@example.com”
-</code></pre>
-<p>其中，”Your Name”和”<a href="mailto:your_email@example.com">your_email@example.com</a>”需要替换成你在GitHub上注册的用户名和邮箱。</p>
-<p>至此，你已经成功同步了GitHub密钥。通过这种方法，你可以在不同的设备上使用相同的密钥进行GitHub操作，避免了重复生成和配置密钥的麻烦。</p>
-<h4>测试连接</h4>
-<pre class="notranslate"><code class="notranslate">最后，您可以通过运行以下命令来测试SSH连接是否正常工作：
-</code></pre>
-<pre class="notranslate"><code class="notranslate">   ssh -T git@github.com
-</code></pre>
-<p>如果您正确同步了GitHub密钥，您将收到一条消息</p>
-<pre class="notranslate"><code class="notranslate">“Hi {username}! You’ve successfully authenticated, but GitHub does not provide shell access.”
-（你好{用户名}！您已成功进行身份验证，但GitHub不提供shell访问。）
-</code></pre>
-<h3>免密登录</h3>
-<p>接下来在vps上运行脚本即可实现免密登录。</p>
-<pre class="notranslate"><code class="notranslate">wget https://github.com/fxxsj/SSHKEY_Installer/raw/master/key.sh --no-check-certificate&amp;&amp; bash key.sh fxxsj 
+<div class="markdown-body" id="postBody"><h2>什么是 EFB？为什么要用 Docker？</h2>
+<p>EFB (EhForwarderBot) 是一个强大的工具，可以帮你把微信消息转发到 Telegram 等其他聊天平台，也可以让你在 Telegram 里直接回复微信消息。简单来说，就是让你在一个地方管理多个聊天工具的消息。</p>
+<p>Docker 又是什么呢？你可以把它想象成一个"魔法集装箱"。我们把 EFB 和它运行需要的所有东西都打包到这个集装箱里。这样，无论你的服务器是什么环境，只要装上 Docker，就能轻松运行 EFB，省去了很多复杂的安装和配置步骤。</p>
+<p>这篇教程会教你如何使用 Docker 来运行 EFB。</p>
+<h2>背景小故事</h2>
+<p>之前我用的微信网页版登录方式 (uos 补丁) 失效了，而且账号还收到了警告，所以我切换到了一个叫做 comwechat 的新方案。下面会介绍这两种方案的区别。</p>
+<h2>微信接入方案：comwechat vs wechat web</h2>
+<p>EFB 连接微信主要有两种方式，你需要根据自己的情况选择一种：</p>
+<h3>wechat web (微信网页版)</h3>
+<p>✅ <strong>优点</strong>：</p>
+<ul>
+<li>占用资源少，对服务器要求低，小内存 VPS 也能跑</li>
+<li>模拟浏览器登录微信网页版</li>
+</ul>
+<p>❌ <strong>缺点</strong>：</p>
+<ul>
+<li>功能相对较少</li>
+<li>只有部分老微信账号（大约 2017 年前注册）才能登录网页版</li>
+</ul>
+<h3>comwechat</h3>
+<p>✅ <strong>优点</strong>：</p>
+<ul>
+<li>功能更全，支持发送高清图片和 Telegram 贴纸</li>
+<li>基于开源项目模拟 Windows 微信客户端</li>
+</ul>
+<p>❌ <strong>缺点</strong>：</p>
+<ul>
+<li>占用资源较多（内存建议 2GB 以上）</li>
+</ul>
+<h2>功能对比</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>功能</th>
+<th>wechat web (网页版)</th>
+<th>comwechat (模拟客户端)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>查看撤回消息</td>
+<td>✅ 支持</td>
+<td>❌ 不支持</td>
+</tr>
+<tr>
+<td>回复消息样式</td>
+<td>普通文本样式</td>
+<td>部分支持原生样式</td>
+</tr>
+<tr>
+<td>发送 Telegram 贴纸</td>
+<td>可能会被压缩</td>
+<td>✅ 支持</td>
+</tr>
+<tr>
+<td>发送高清图片</td>
+<td>大图会被压缩</td>
+<td>✅ 支持</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h2>选择建议</h2>
+<ul>
+<li>
+<p><strong>选择 wechat web</strong> 如果：</p>
+<ul>
+<li>微信账号还能登录网页版</li>
+<li>对资源占用敏感</li>
+</ul>
+</li>
+<li>
+<p><strong>选择 comwechat</strong> 如果：</p>
+<ul>
+<li>无法登录网页版</li>
+<li>需要完整功能（高清图/贴纸）</li>
+<li>服务器资源充足（建议 2GB 内存）</li>
+</ul>
+</li>
+</ul>
+<h2>第一步：安装 Docker</h2>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 下载 Docker 官方安装脚本</span>
+curl -fsSL https://get.docker.com -o get-docker.sh
 
+<span class="pl-c"><span class="pl-c">#</span> 执行安装脚本</span>
+sudo sh get-docker.sh
+
+<span class="pl-c"><span class="pl-c">#</span> 删除安装脚本（可选）</span>
+rm get-docker.sh</pre></div>
+<h2>第二步：下载 EFB 配置模板</h2>
+<div class="highlight highlight-source-shell"><pre class="notranslate">git clone https://github.com/jiz4oh/ehforwarderbot.git ehforwarderbot</pre></div>
+<p>项目结构：</p>
+<pre class="notranslate"><code class="notranslate">.
+├── Dockerfile                  # Docker 构建镜像的说明书 (一般不用管)
+├── README.md                   # 项目说明文件
+├── docker-compose.web.yaml     # 用于启动 wechat web 版本的配置文件
+├── docker-compose.yaml         # 用于启动 comwechat 版本的配置文件
+├── entrypoint.sh               # Docker 容器启动时运行的脚本 (一般不用管)
+├── profiles/                   # 核心配置文件夹！存放不同账号的配置
+│   ├── comwechat/              # 第一个 comwechat 账号的配置
+│   │   ├── ... (一些中间件配置，可以先忽略)
+│   │   ├── blueset.telegram/
+│   │   │   └── config.yaml     # !! Telegram 配置，需要修改 !!
+│   │   ├── config.yaml         # EFB 主配置 (一般不用改)
+│   │   └── honus.comwechat/
+│   │       └── config.yaml     # comwechat 配置 (一般不用改)
+│   ├── comwechat2/             # 如果你有第二个微信账号想用 comwechat，可以复制 comwechat 文件夹并改名
+│   │   └── ...
+│   └── default/                # wechat web 版本的配置 (网页版只需这一个)
+│       ├── blueset.telegram/
+│       │   └── config.yaml     # !! Telegram 配置，需要修改 !!
+│       ├── blueset.wechat/
+│       │   └── config.yaml     # 微信网页版配置 (可选修改)
+│       └── config.yaml         # EFB 主配置 (一般不用改)
+└── run2.py                     # (comwechat 辅助脚本，一般不用管)
 </code></pre>
-<h3>总结</h3>
-<p>开启方法非常简单，平时登陆也免除了输入密码的烦恼。</p>
-<h3>版权声明</h3>
-<p>本文参考</p>
-<blockquote>
-<p>博客<a href="https://www.94ish.me/1966.html" rel="nofollow">就是爱生活</a>。</p>
-</blockquote>
-<blockquote>
-<p><a href="https://worktile.com/kb/ask/525351.html" rel="nofollow">https://worktile.com/kb/ask/525351.html</a></p>
-</blockquote>
-<blockquote>
-<p>感谢原作者，以及开源世界。</p>
-</blockquote></div>
+<h2>第三步：修改配置</h2>
+<p>编辑 Telegram 配置文件：</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">nano profiles/comwechat/blueset.telegram/config.yaml</pre></div>
+<p>需要修改的字段：</p>
+<div class="highlight highlight-source-yaml"><pre class="notranslate"><span class="pl-ent">token</span>: <span class="pl-s"><span class="pl-pds">"</span>你的Telegram Bot Token<span class="pl-pds">"</span></span>
+<span class="pl-ent">admins</span>: 
+  - <span class="pl-s">你的Telegram User ID</span></pre></div>
+<h2>第四步：启动 EFB</h2>
+<p>comwechat 方案：</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">docker-compose up -d</pre></div>
+<p>wechat web 方案：</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">docker-compose -f ./docker-compose.web.yaml up -d</pre></div>
+<h2>首次登录</h2>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 查看登录二维码</span>
+docker-compose logs -f</pre></div>
+<h2>常用命令</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>操作</th>
+<th>命令</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>查看日志</td>
+<td><code class="notranslate">docker-compose logs -f</code></td>
+</tr>
+<tr>
+<td>停止服务</td>
+<td><code class="notranslate">docker-compose down</code></td>
+</tr>
+<tr>
+<td>更新配置</td>
+<td><code class="notranslate">git pull &amp;&amp; docker-compose pull</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<pre class="notranslate"><code class="notranslate"></code></pre></div>
 <div style="font-size:small;margin-top:8px;float:right;">❤️ 转载文章请注明出处，谢谢！❤️</div>
 
 <button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
