@@ -107,7 +107,7 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 <h3>一、添加 PTR 记录</h3>
 <p>趁着这空闲，在服务商里设置一下ptr记录。<br>
 找到 VPS 后台，找到类似 <code class="notranslate">PTR Records</code>、<code class="notranslate">Reverse DNS</code> 等类似关键词的选项，设置反向解析。<br>
-<a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/14a18776-321d-437b-8590-942e48bc04e6"><img src="https://github.com/user-attachments/assets/14a18776-321d-437b-8590-942e48bc04e6" alt="image" style="max-width: 100%; height: auto;"></a></p>
+<a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/14a18776-321d-437b-8590-942e48bc04e6"><img src="https://github.com/user-attachments/assets/14a18776-321d-437b-8590-942e48bc04e6" alt="image" style="max-width: 100%;"></a></p>
 <h3>二、设置 VPS</h3>
 <ol>
 <li>关闭 Selinux</li>
@@ -146,7 +146,7 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 <ol start="2">
 <li>查找安装命令<br>
 打开 <a href="http://www.ewomail.com/list-11.html" rel="nofollow">这个网站</a> ，在里面填入你的域名（主域名），获取自动安装代码<br>
-<a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/9e0fe5f7-785d-47b0-84a3-0f61be147f73"><img src="https://github.com/user-attachments/assets/9e0fe5f7-785d-47b0-84a3-0f61be147f73" alt="image" style="max-width: 100%; height: auto;"></a></li>
+<a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/9e0fe5f7-785d-47b0-84a3-0f61be147f73"><img src="https://github.com/user-attachments/assets/9e0fe5f7-785d-47b0-84a3-0f61be147f73" alt="image" style="max-width: 100%;"></a></li>
 </ol>
 <pre class="notranslate"><code class="notranslate">wget -c https://down.ewomail.com/install-04.sh &amp;&amp; sh install-04.sh baidu.com
 </code></pre>
@@ -193,15 +193,15 @@ systemctl restart amavisd
 <pre class="notranslate"><code class="notranslate">amavisd -c /etc/amavisd/amavisd.conf showkeys
 </code></pre>
 <p>复制下图中红色框中内容<br>
-<a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/d3b18488-9443-4a6b-a749-306274ef6db6"><img src="https://github.com/user-attachments/assets/d3b18488-9443-4a6b-a749-306274ef6db6" alt="image" style="max-width: 100%; height: auto;"></a></p>
+<a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/d3b18488-9443-4a6b-a749-306274ef6db6"><img src="https://github.com/user-attachments/assets/d3b18488-9443-4a6b-a749-306274ef6db6" alt="image" style="max-width: 100%;"></a></p>
 <p>打开 <a href="http://www.ewomail.com/list-20.html" rel="nofollow">这个网站</a> ，整理 DKIM 信息。<br>
-<a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/5269f403-dcc8-445f-a177-5d30ec76f3e1"><img src="https://github.com/user-attachments/assets/5269f403-dcc8-445f-a177-5d30ec76f3e1" alt="image" style="max-width: 100%; height: auto;"></a><br>
+<a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/5269f403-dcc8-445f-a177-5d30ec76f3e1"><img src="https://github.com/user-attachments/assets/5269f403-dcc8-445f-a177-5d30ec76f3e1" alt="image" style="max-width: 100%;"></a><br>
 记录整理过的 DKIM 信息，解析的时候会用到！</p>
 <ol start="2">
 <li>添加解析记录</li>
 </ol>
 <p>来到 CF DNS 的解析页面，添加如下解析：（必须关闭黄色小云朵 – 代理状态关闭）,共计 八项 解析记录<br>
-<a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/b11d315d-274e-45ef-a1a2-12373942bc2f"><img src="https://github.com/user-attachments/assets/b11d315d-274e-45ef-a1a2-12373942bc2f" alt="image" style="max-width: 100%; height: auto;"></a></p>
+<a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/b11d315d-274e-45ef-a1a2-12373942bc2f"><img src="https://github.com/user-attachments/assets/b11d315d-274e-45ef-a1a2-12373942bc2f" alt="image" style="max-width: 100%;"></a></p>
 <p>需要的字符串：</p>
 <pre class="notranslate"><code class="notranslate">v=spf1 ip4:127.0.0.1 -all   #SPF 记录值 127.0.0.1 改为你的 VPS IP
 dkim._domainkey             #DKIM 记录名称
@@ -232,7 +232,7 @@ v=DMARC1; p=none;           #DMARC 记录值
 # Adding TXT value: 7zAfdmdxUwe0moTXZ-4VvT4uOtWGnsi94-AHKEe97T4 for domain: _acme-challenge.baidu.com
 
 </code></pre>
-<p><a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/841a9a2a-f1e7-4f08-8eab-c3f5bfc66349"><img src="https://github.com/user-attachments/assets/841a9a2a-f1e7-4f08-8eab-c3f5bfc66349" alt="image" style="max-width: 100%; height: auto;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/841a9a2a-f1e7-4f08-8eab-c3f5bfc66349"><img src="https://github.com/user-attachments/assets/841a9a2a-f1e7-4f08-8eab-c3f5bfc66349" alt="image" style="max-width: 100%;"></a></p>
 <pre class="notranslate"><code class="notranslate">~/.acme.sh/acme.sh --installcert -d *.baidu.com --key-file /etc/ssl/private/dovecot.pem --fullchain-file /etc/ssl/certs/dovecot.pem
 </code></pre>
 <pre class="notranslate"><code class="notranslate">service nginx restart
