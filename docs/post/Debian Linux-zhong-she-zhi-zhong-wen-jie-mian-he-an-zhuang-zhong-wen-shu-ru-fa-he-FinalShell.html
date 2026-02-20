@@ -19,7 +19,7 @@
 <meta property="og:url" content="https://fxxsj.github.io/post/Debian%20Linux-zhong-she-zhi-zhong-wen-jie-mian-he-an-zhuang-zhong-wen-shu-ru-fa-he-FinalShell.html">
 <meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
 <title>Debian Linux中设置中文界面和安装中文输入法和FinalShell</title>
-<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
+
 
 
 </head>
@@ -92,29 +92,36 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 <hr>
 <h2>一、Debian 中文化</h2>
 <h3>1. 安装中文字体</h3>
-<div class="highlight highlight-source-shell"><pre class="notranslate">apt install fonts-wqy-zenhei</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">apt install fonts-wqy-zenhei
+</code></pre>
 <h3>2. 安装 locales 支持</h3>
-<div class="highlight highlight-source-shell"><pre class="notranslate">apt install locales</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">apt install locales
+</code></pre>
 <h3>3. 编辑 locale.gen</h3>
-<div class="highlight highlight-source-shell"><pre class="notranslate">vi /etc/locale.gen</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">vi /etc/locale.gen
+</code></pre>
 <p>取消注释：</p>
 <pre class="notranslate"><code class="notranslate">zh_CN.UTF-8 UTF-8
 </code></pre>
 <p>如果没有，就手动添加。</p>
 <h3>4. 创建/修改 locale.conf</h3>
-<div class="highlight highlight-source-shell"><pre class="notranslate">vi /etc/locale.conf</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">vi /etc/locale.conf
+</code></pre>
 <p>写入：</p>
 <pre class="notranslate"><code class="notranslate">LANG=zh_CN.UTF-8
 </code></pre>
 <h3>5. 重新生成 locales</h3>
-<div class="highlight highlight-source-shell"><pre class="notranslate">dpkg-reconfigure locales</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">dpkg-reconfigure locales
+</code></pre>
 <h3>6. 重启生效</h3>
-<div class="highlight highlight-source-shell"><pre class="notranslate">reboot</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">reboot
+</code></pre>
 <hr>
 <h2>二、安装中文输入法</h2>
 <p>Debian 默认支持多种输入法框架：<code class="notranslate">fcitx</code>、<code class="notranslate">ibus</code>、<code class="notranslate">uim</code>。这里选择 <strong>ibus + rime</strong>。</p>
 <h3>1. 安装 ibus-rime</h3>
-<div class="highlight highlight-source-shell"><pre class="notranslate">apt install ibus-rime</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">apt install ibus-rime
+</code></pre>
 <h3>2. 重启/重新登录</h3>
 <p>注销用户或重启系统后，在 <strong>系统设置 → 输入法</strong> 中添加 ibus-rime。</p>
 <h3>3. 导入词库</h3>
@@ -131,28 +138,34 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 <pre class="notranslate"><code class="notranslate">finalshell_linux_x64.deb
 </code></pre>
 <h3>2. 安装 deb 包</h3>
-<div class="highlight highlight-source-shell"><pre class="notranslate">dpkg -i finalshell_linux_x64.deb</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">dpkg -i finalshell_linux_x64.deb
+</code></pre>
 <h3>3. 修复依赖</h3>
-<div class="highlight highlight-source-shell"><pre class="notranslate">apt install -f</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">apt install -f
+</code></pre>
 <hr>
 <h2>四、开启远程桌面 (3389 / xrdp)</h2>
 <p>如果需要使用 Windows 自带的 <strong>远程桌面 (mstsc)</strong> 连接 Debian：</p>
 <h3>1. 安装轻量桌面 + xrdp</h3>
-<div class="highlight highlight-source-shell"><pre class="notranslate">apt update
+<pre lang="bash" class="notranslate"><code class="notranslate">apt update
 apt install -y xfce4 xfce4-goodies
-apt install -y xrdp</pre></div>
+apt install -y xrdp
+</code></pre>
 <h3>2. 设置默认会话为 Xfce</h3>
-<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">"</span>startxfce4<span class="pl-pds">"</span></span> <span class="pl-k">&gt;</span> <span class="pl-k">~</span>/.xsession
-chmod +x <span class="pl-k">~</span>/.xsession</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">echo "startxfce4" &gt; ~/.xsession
+chmod +x ~/.xsession
+</code></pre>
 <p>或者修改 <code class="notranslate">/etc/xrdp/startwm.sh</code> 文件，在结尾加：</p>
 <pre class="notranslate"><code class="notranslate">exec startxfce4
 </code></pre>
 <h3>3. 启动并设置开机自启</h3>
-<div class="highlight highlight-source-shell"><pre class="notranslate">systemctl <span class="pl-c1">enable</span> --now xrdp
-systemctl status xrdp</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">systemctl enable --now xrdp
+systemctl status xrdp
+</code></pre>
 <h3>4. 防火墙放行 3389 端口</h3>
-<div class="highlight highlight-source-shell"><pre class="notranslate">ufw allow 3389/tcp
-ufw reload</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">ufw allow 3389/tcp
+ufw reload
+</code></pre>
 <p>（若使用云服务器，还需在云平台安全组开放 3389）</p>
 <h3>5. Windows 端连接</h3>
 <p>在 Windows 的远程桌面里输入：</p>
@@ -167,15 +180,19 @@ Input/output error.
 </code></pre>
 <h3>1. 安装浏览器</h3>
 <p>推荐安装 Firefox ESR：</p>
-<div class="highlight highlight-source-shell"><pre class="notranslate">apt install -y firefox-esr</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">apt install -y firefox-esr
+</code></pre>
 <p>或安装 Chromium：</p>
-<div class="highlight highlight-source-shell"><pre class="notranslate">apt install -y chromium</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">apt install -y chromium
+</code></pre>
 <h3>2. 设置默认浏览器</h3>
-<div class="highlight highlight-source-shell"><pre class="notranslate">xdg-settings <span class="pl-c1">set</span> default-web-browser firefox-esr.desktop
-<span class="pl-c"><span class="pl-c">#</span> 或者</span>
-xdg-settings <span class="pl-c1">set</span> default-web-browser chromium.desktop</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">xdg-settings set default-web-browser firefox-esr.desktop
+# 或者
+xdg-settings set default-web-browser chromium.desktop
+</code></pre>
 <h3>3. 检查配置</h3>
-<div class="highlight highlight-source-shell"><pre class="notranslate">xdg-settings get default-web-browser</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">xdg-settings get default-web-browser
+</code></pre>
 <p>应返回 <code class="notranslate">firefox-esr.desktop</code> 或 <code class="notranslate">chromium.desktop</code>。</p>
 <hr>
 <h2>六、常见问题与排错</h2>
@@ -186,15 +203,17 @@ xdg-settings <span class="pl-c1">set</span> default-web-browser chromium.desktop
 </li>
 <li>
 <p>查看日志：</p>
-<div class="highlight highlight-source-shell"><pre class="notranslate">journalctl -u xrdp -b --no-pager
-journalctl -u xrdp-sesman -b --no-pager</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">journalctl -u xrdp -b --no-pager
+journalctl -u xrdp-sesman -b --no-pager
+</code></pre>
 </li>
 </ul>
 <h3>2. 输入法不生效</h3>
 <ul>
 <li>
 <p>确认 <code class="notranslate">ibus-daemon</code> 已运行：</p>
-<div class="highlight highlight-source-shell"><pre class="notranslate">ps aux <span class="pl-k">|</span> grep ibus-daemon</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">ps aux | grep ibus-daemon
+</code></pre>
 </li>
 <li>
 <p>系统设置里选择正确的输入法框架。</p>
@@ -207,7 +226,8 @@ journalctl -u xrdp-sesman -b --no-pager</pre></div>
 </li>
 <li>
 <p>如果报依赖错误，执行：</p>
-<div class="highlight highlight-source-shell"><pre class="notranslate">apt install -f</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">apt install -f
+</code></pre>
 </li>
 </ul>
 <h3>4. 安全性建议</h3>
