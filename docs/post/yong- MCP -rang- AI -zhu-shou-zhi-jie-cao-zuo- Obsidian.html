@@ -21,7 +21,7 @@
 <meta property="og:url" content="https://fxxsj.github.io/post/yong-%20MCP%20-rang-%20AI%20-zhu-shou-zhi-jie-cao-zuo-%20Obsidian.html">
 <meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
 <title>用 MCP 让 AI 助手直接操作 Obsidian</title>
-
+<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
 
 
 </head>
@@ -108,33 +108,30 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 <h2>配置步骤</h2>
 <h3>1. 创建 Vault</h3>
 <p>首先在一个正常路径创建 Vault（不要用隐藏目录）：</p>
-<pre lang="bash" class="notranslate"><code class="notranslate">mkdir -p ~/Documents/ObsidianVault
-</code></pre>
+<div class="highlight highlight-source-shell"><pre class="notranslate">mkdir -p <span class="pl-k">~</span>/Documents/ObsidianVault</pre></div>
 <p>为什么强调"正常路径"？因为我最初想用 <code class="notranslate">~/.openclaw/workspace/outputs/</code>，结果踩了坑——很多 MCP Server 出于安全考虑会拒绝访问隐藏目录（以 <code class="notranslate">.</code> 开头的路径）。</p>
 <h3>2. 配置 MCP Server</h3>
 <p>在 <code class="notranslate">~/.openclaw/config/mcporter.json</code> 里添加：</p>
-<pre lang="json" class="notranslate"><code class="notranslate">{
-  "mcpServers": {
-    "obsidian": {
-      "command": "npx -y @jianruidutong/obsidian-mcp",
-      "env": {
-        "OBSIDIAN_VAULT_PATH": "/Users/你的用户名/Documents/ObsidianVault"
+<div class="highlight highlight-source-json"><pre class="notranslate">{
+  <span class="pl-ent">"mcpServers"</span>: {
+    <span class="pl-ent">"obsidian"</span>: {
+      <span class="pl-ent">"command"</span>: <span class="pl-s"><span class="pl-pds">"</span>npx -y @jianruidutong/obsidian-mcp<span class="pl-pds">"</span></span>,
+      <span class="pl-ent">"env"</span>: {
+        <span class="pl-ent">"OBSIDIAN_VAULT_PATH"</span>: <span class="pl-s"><span class="pl-pds">"</span>/Users/你的用户名/Documents/ObsidianVault<span class="pl-pds">"</span></span>
       }
     }
   }
-}
-</code></pre>
+}</pre></div>
 <p>重启 OpenClaw 后就能用了。</p>
 <h3>3. 验证安装</h3>
-<pre lang="bash" class="notranslate"><code class="notranslate"># 列出所有笔记
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 列出所有笔记</span>
 mcporter call obsidian.list_notes
 
-# 读取某个笔记
+<span class="pl-c"><span class="pl-c">#</span> 读取某个笔记</span>
 mcporter call obsidian.read_note path=README.md
 
-# 创建笔记
-mcporter call obsidian.create_note path=test.md content="Hello World"
-</code></pre>
+<span class="pl-c"><span class="pl-c">#</span> 创建笔记</span>
+mcporter call obsidian.create_note path=test.md content=<span class="pl-s"><span class="pl-pds">"</span>Hello World<span class="pl-pds">"</span></span></pre></div>
 <h2>插件配置</h2>
 <p>光能读写还不够，Obsidian 的精髓在于插件生态。我装了这几个：</p>
 <h3>Dataview（必装）</h3>
@@ -177,13 +174,12 @@ SORT file.ctime DESC
 </code></pre>
 <h2>Dashboard 示例</h2>
 <p>用 Dataview 做了一个数据看板：</p>
-<pre lang="markdown" class="notranslate"><code class="notranslate">## 📊 文章统计
+<div class="highlight highlight-text-md"><pre class="notranslate"><span class="pl-mh">## <span class="pl-en">📊 文章统计</span></span>
 
-```dataview
-TABLE length(rows) as "数量"
-FROM "writer" OR "explorer"
-GROUP BY file.folder
-</code></pre>
+<span class="pl-s">```</span><span class="pl-en">dataview</span><span class="pl-c1"></span>
+<span class="pl-c1">TABLE length(rows) as "数量"</span>
+<span class="pl-c1">FROM "writer" OR "explorer"</span>
+<span class="pl-c1">GROUP BY file.folder</span></pre></div>
 <h2>📝 最近更新</h2>
 <pre lang="dataview" class="notranslate"><code class="notranslate">TABLE file.mtime as "更新时间"
 SORT file.mtime DESC
