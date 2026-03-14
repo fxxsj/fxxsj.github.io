@@ -17,7 +17,7 @@
 <meta property="og:url" content="https://fxxsj.github.io/post/Markdown-ji-ben-yu-fa.html">
 <meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
 <title>Markdown基本语法</title>
-
+<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
 
 
 </head>
@@ -482,16 +482,11 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 </blockquote>
 <h2>代码高亮</h2>
 <p>在三个反引号后面加上编程语言的名字，另起一行开始写代码，最后一行再加上三个反引号。</p>
-<pre lang="Java" class="notranslate"><code class="notranslate">public static void main(String[]args){} //Java
-</code></pre>
-<pre lang="c" class="notranslate"><code class="notranslate">int main(int argc, char *argv[]) //C
-</code></pre>
-<pre lang="Bash" class="notranslate"><code class="notranslate">echo "hello GitHub" #Bash
-</code></pre>
-<pre lang="javascript" class="notranslate"><code class="notranslate">document.getElementById("myH1").innerHTML="Welcome to my Homepage"; //javascipt
-</code></pre>
-<pre lang="cpp" class="notranslate"><code class="notranslate">string &amp;operator+(const string&amp; A,const string&amp; B) //cpp
-</code></pre>
+<div class="highlight highlight-source-java"><pre class="notranslate"><span class="pl-k">public</span> <span class="pl-k">static</span> <span class="pl-smi">void</span> <span class="pl-en">main</span>(<span class="pl-smi">String</span>[]<span class="pl-s1">args</span>){} <span class="pl-c">//Java</span></pre></div>
+<div class="highlight highlight-source-c"><pre class="notranslate"><span class="pl-smi">int</span> <span class="pl-en">main</span>(<span class="pl-smi">int</span> <span class="pl-s1">argc</span>, <span class="pl-smi">char</span> <span class="pl-c1">*</span><span class="pl-s1">argv</span>[]) <span class="pl-c">//C</span></pre></div>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">"</span>hello GitHub<span class="pl-pds">"</span></span> <span class="pl-c"><span class="pl-c">#</span>Bash</span></pre></div>
+<div class="highlight highlight-source-js"><pre class="notranslate"><span class="pl-smi">document</span><span class="pl-kos">.</span><span class="pl-en">getElementById</span><span class="pl-kos">(</span><span class="pl-s">"myH1"</span><span class="pl-kos">)</span><span class="pl-kos">.</span><span class="pl-c1">innerHTML</span><span class="pl-c1">=</span><span class="pl-s">"Welcome to my Homepage"</span><span class="pl-kos">;</span> <span class="pl-c">//javascipt</span></pre></div>
+<div class="highlight highlight-source-c++"><pre class="notranslate">string &amp;<span class="pl-k">operator</span>+(<span class="pl-k">const</span> string&amp; A,<span class="pl-k">const</span> string&amp; B) <span class="pl-c"><span class="pl-c">//</span>cpp</span></pre></div>
 <h2>表格</h2>
 <hr>
 <markdown-accessiblity-table><table role="table">
@@ -608,9 +603,8 @@ GFM中可以显示的展示diff效果。使用绿色表示新增，红色表示�
 <p>其语法与代码高亮类似，只是在三个反引号后面写diff，<br>
 并且其内容中，以 <code class="notranslate">+ </code>开头表示新增，<code class="notranslate">- </code>开头表示删除。</p>
 <p>效果如下：</p>
-<pre lang="diff" class="notranslate"><code class="notranslate">+ 鸟宿池边树，僧敲月下门
-- 鸟宿池边树，僧推月下门
-</code></pre>
+<div class="highlight highlight-source-diff"><pre class="notranslate"><span class="pl-mi1"><span class="pl-mi1">+</span> 鸟宿池边树，僧敲月下门</span>
+<span class="pl-md"><span class="pl-md">-</span> 鸟宿池边树，僧推月下门</span></pre></div>
 <hr></div>
 <div style="font-size:small;margin-top:8px;float:right;">❤️ 转载文章请注明出处，谢谢！❤️</div>
 
