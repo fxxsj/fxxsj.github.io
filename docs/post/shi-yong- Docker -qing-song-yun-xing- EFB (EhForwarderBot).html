@@ -21,7 +21,7 @@ EFB (EhForwarderBot) 是一个强大的工具，可以帮你把微信消息转�
 <meta property="og:url" content="https://fxxsj.github.io/post/shi-yong-%20Docker%20-qing-song-yun-xing-%20EFB%20%28EhForwarderBot%29.html">
 <meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
 <title>使用 Docker 轻松运行 EFB (EhForwarderBot)</title>
-<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
+
 
 
 </head>
@@ -167,16 +167,18 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 </li>
 </ul>
 <h2>第一步：安装 Docker</h2>
-<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 下载 Docker 官方安装脚本</span>
+<pre lang="bash" class="notranslate"><code class="notranslate"># 下载 Docker 官方安装脚本
 curl -fsSL https://get.docker.com -o get-docker.sh
 
-<span class="pl-c"><span class="pl-c">#</span> 执行安装脚本</span>
+# 执行安装脚本
 sudo sh get-docker.sh
 
-<span class="pl-c"><span class="pl-c">#</span> 删除安装脚本（可选）</span>
-rm get-docker.sh</pre></div>
+# 删除安装脚本（可选）
+rm get-docker.sh
+</code></pre>
 <h2>第二步：下载 EFB 配置模板</h2>
-<div class="highlight highlight-source-shell"><pre class="notranslate">git clone https://github.com/jiz4oh/ehforwarderbot.git ehforwarderbot</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">git clone https://github.com/jiz4oh/ehforwarderbot.git ehforwarderbot
+</code></pre>
 <p>项目结构：</p>
 <pre class="notranslate"><code class="notranslate">.
 ├── Dockerfile                  # Docker 构建镜像的说明书 (一般不用管)
@@ -204,19 +206,24 @@ rm get-docker.sh</pre></div>
 </code></pre>
 <h2>第三步：修改配置</h2>
 <p>编辑 Telegram 配置文件：</p>
-<div class="highlight highlight-source-shell"><pre class="notranslate">nano profiles/comwechat/blueset.telegram/config.yaml</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">nano profiles/comwechat/blueset.telegram/config.yaml
+</code></pre>
 <p>需要修改的字段：</p>
-<div class="highlight highlight-source-yaml"><pre class="notranslate"><span class="pl-ent">token</span>: <span class="pl-s"><span class="pl-pds">"</span>你的Telegram Bot Token<span class="pl-pds">"</span></span>
-<span class="pl-ent">admins</span>: 
-  - <span class="pl-s">你的Telegram User ID</span></pre></div>
+<pre lang="yaml" class="notranslate"><code class="notranslate">token: "你的Telegram Bot Token"
+admins: 
+  - 你的Telegram User ID
+</code></pre>
 <h2>第四步：启动 EFB</h2>
 <p>comwechat 方案：</p>
-<div class="highlight highlight-source-shell"><pre class="notranslate">docker-compose up -d</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">docker-compose up -d
+</code></pre>
 <p>wechat web 方案：</p>
-<div class="highlight highlight-source-shell"><pre class="notranslate">docker-compose -f ./docker-compose.web.yaml up -d</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate">docker-compose -f ./docker-compose.web.yaml up -d
+</code></pre>
 <h2>首次登录</h2>
-<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 查看登录二维码</span>
-docker-compose logs -f</pre></div>
+<pre lang="bash" class="notranslate"><code class="notranslate"># 查看登录二维码
+docker-compose logs -f
+</code></pre>
 <h2>常用命令</h2>
 <markdown-accessiblity-table><table role="table">
 <thead>
