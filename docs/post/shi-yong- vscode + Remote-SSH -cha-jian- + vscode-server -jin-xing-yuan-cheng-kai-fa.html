@@ -21,7 +21,7 @@
 <meta property="og:url" content="https://fxxsj.github.io/post/shi-yong-%20vscode%20%2B%20Remote-SSH%20-cha-jian-%20%2B%20vscode-server%20-jin-xing-yuan-cheng-kai-fa.html">
 <meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
 <title>使用 vscode + Remote-SSH 插件 + vscode-server 进行远程开发</title>
-
+<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
 
 
 </head>
@@ -194,8 +194,7 @@ touch 0
 <ol>
 <li>
 <p>生成 SSH 密钥对（若不存在得话）</p>
-<pre lang="bash" class="notranslate"><code class="notranslate">ssh-keygen -C "your email address"
-</code></pre>
+<div class="highlight highlight-source-shell"><pre class="notranslate">ssh-keygen -C <span class="pl-s"><span class="pl-pds">"</span>your email address<span class="pl-pds">"</span></span></pre></div>
 <p>生成的密钥对被保存在本地的 <code class="notranslate">C:\Users\你的用户名\.ssh</code> 目录下，生成的密钥对包括私钥 <code class="notranslate">id_rsa</code> 和公钥 <code class="notranslate">id_rsa.pub</code>，我们需要将公钥中的内容添加到远程服务器。</p>
 </li>
 <li>
