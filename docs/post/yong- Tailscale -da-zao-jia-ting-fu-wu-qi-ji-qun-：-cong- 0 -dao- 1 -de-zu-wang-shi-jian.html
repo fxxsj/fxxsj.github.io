@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark_colorblind" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    
+    <link rel="icon" href="https://github.githubassets.com/favicons/favicon.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="# 用 Tailscale 打造家庭服务器集群：从 0 到 1 的组网实践
+
+> **场景**：家里有 Mac mini，云上有两台 Linux 服务器，想让他们像在一个局域网一样互相访问。">
+<meta property="og:title" content="用 Tailscale 打造家庭服务器集群：从 0 到 1 的组网实践">
+<meta property="og:description" content="# 用 Tailscale 打造家庭服务器集群：从 0 到 1 的组网实践
+
+> **场景**：家里有 Mac mini，云上有两台 Linux 服务器，想让他们像在一个局域网一样互相访问。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://fxxsj.github.io/post/yong-%20Tailscale%20-da-zao-jia-ting-fu-wu-qi-ji-qun-%EF%BC%9A-cong-%200%20-dao-%201%20-de-zu-wang-shi-jian.html">
+<meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
+<title>用 Tailscale 打造家庭服务器集群：从 0 到 1 的组网实践</title>
+<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+.copy-feedback {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 50px;
+    color: var(--color-fg-on-emphasis);
+    background-color: var(--color-fg-muted);
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-size: 12px;
+}
+</style>
+
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">用 Tailscale 打造家庭服务器集群：从 0 到 1 的组网实践</h1>
+<div class="title-right">
+    <a href="https://fxxsj.github.io" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/fxxsj/fxxsj.github.io/issues/25" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><h1>用 Tailscale 打造家庭服务器集群：从 0 到 1 的组网实践</h1>
+<blockquote>
+<p><strong>场景</strong>：家里有 Mac mini，云上有两台 Linux 服务器，想让他们像在一个局域网一样互相访问。</p>
+</blockquote>
+<blockquote>
+<p><strong>方案</strong>：Tailscale - 一款基于 WireGuard 的零配置 VPN 工具。</p>
+</blockquote>
+<hr>
+<h2>什么是 Tailscale？</h2>
+<p>Tailscale 是一款<strong>零配置 VPN</strong> 工具，基于 WireGuard 协议。它的核心优势：</p>
+<ul>
+<li>✅ <strong>无需公网 IP</strong>：即使你的设备在 NAT 后面</li>
+<li>✅ <strong>自动打洞</strong>：P2P 直连，不走服务器中转</li>
+<li>✅ <strong>跨平台</strong>：macOS、Linux、Windows、Android、iOS 全支持</li>
+<li>✅ <strong>安全加密</strong>：端到端加密，私钥不上传</li>
+<li>✅ <strong>免费额度</strong>：个人使用免费，支持 100 台设备</li>
+</ul>
+<hr>
+<h2>我的网络架构</h2>
+<h3>设备清单</h3>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>设备名</th>
+<th>角色</th>
+<th>系统</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Mac mini (基地)</strong></td>
+<td>家庭服务器</td>
+<td>macOS</td>
+</tr>
+<tr>
+<td><strong>云服务器 A (桥梁)</strong></td>
+<td>API 中转站</td>
+<td>Linux</td>
+</tr>
+<tr>
+<td><strong>云服务器 B (利剑)</strong></td>
+<td>应用服务器</td>
+<td>Linux</td>
+</tr>
+<tr>
+<td><strong>NUC</strong></td>
+<td>家庭节点</td>
+<td>Linux</td>
+</tr>
+<tr>
+<td><strong>MacBook Pro</strong></td>
+<td>工作本</td>
+<td>macOS</td>
+</tr>
+<tr>
+<td><strong>Android 手机</strong></td>
+<td>移动设备</td>
+<td>Android</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><strong>注</strong>：IP 地址已脱敏，实际部署时 Tailscale 会自动分配 100.x.x.x 网段。</p>
+<h3>网络拓扑</h3>
+<pre class="notranslate"><code class="notranslate">┌─────────────────────────────────────────────────────────────┐
+│                      Tailscale 网络段                        │
+│                        100.x.x.x                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌─────────────┐     ┌─────────────┐     ┌─────────────┐  │
+│  │   基地      │     │   桥梁      │     │   利剑      │  │
+│  │  Mac mini   │────│  云服务器 A │────│  云服务器 B │  │
+│  │  家庭       │     │   中转站    │     │   应用      │  │
+│  └─────────────┘     └─────────────┘     └─────────────┘  │
+│                                                              │
+│  ┌─────────────┐     ┌─────────────┐                      │
+│  │ MacBook Pro │     │  Android手机 │                      │
+│  └─────────────┘     └─────────────┘                      │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<hr>
+<h2>安装配置</h2>
+<h3>1. 注册账号</h3>
+<p>访问 <a href="https://tailscale.com" rel="nofollow">Tailscale 官网</a>，用 Google/GitHub 账号登录即可。</p>
+<h3>2. 安装客户端</h3>
+<p><strong>macOS / Linux:</strong></p>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> macOS</span>
+brew install --cask tailscale
+
+<span class="pl-c"><span class="pl-c">#</span> Ubuntu/Debian</span>
+curl -fsSL https://tailscale.com/install.sh <span class="pl-k">|</span> sh
+
+<span class="pl-c"><span class="pl-c">#</span> Arch Linux</span>
+yay -S tailscale</pre></div>
+<p><strong>Android / iOS:</strong><br>
+在应用商店搜索 "Tailscale" 安装。</p>
+<h3>3. 登录并连接</h3>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> macOS/Linux</span>
+sudo tailscale up</pre></div>
+<p>第一次运行会弹出浏览器，登录后自动加入网络。</p>
+<hr>
+<h2>实战应用场景</h2>
+<h3>场景 1：SSH 免密登录云服务器</h3>
+<p><strong>问题</strong>：云服务器没有公网 IP，每次需要跳板机才能 SSH。</p>
+<p><strong>解决</strong>：通过 Tailscale 直连。</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 直接用 Tailscale IP 连接（IP 已脱敏）</span>
+ssh root@100.x.x.x
+
+<span class="pl-c"><span class="pl-c">#</span> 或用设备名（需配置 MagicDNS）</span>
+ssh root@server-name</pre></div>
+<p><strong>优势</strong>：</p>
+<ul>
+<li>不需要公网 IP</li>
+<li>不需要开放端口</li>
+<li>跳板机成为历史</li>
+</ul>
+<hr>
+<h3>场景 2：内网服务外网化</h3>
+<p><strong>问题</strong>：Mac mini 上的服务只能在局域网访问，出门后无法使用。</p>
+<p><strong>解决</strong>：Tailscale 让所有设备都在"虚拟局域网"中。</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 在公司通过 Tailscale 访问家里的 Mac mini</span>
+ssh username@100.x.x.x
+
+<span class="pl-c"><span class="pl-c">#</span> 访问 Mac mini 上的 Web 服务</span>
+curl http://100.x.x.x:8080</pre></div>
+<hr>
+<h3>场景 3：服务器集群组网</h3>
+<p><strong>问题</strong>：云服务器之间需要互相通信，但安全组限制较多。</p>
+<p><strong>解决</strong>：Tailscale 让它们像在同一个机房。</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 服务器 A 访问服务器 B</span>
+ssh root@100.x.x.x
+
+<span class="pl-c"><span class="pl-c">#</span> 同步文件</span>
+rsync -avz /data/ root@100.x.x.x:/backup/</pre></div>
+<hr>
+<h3>场景 4：手机管理服务器</h3>
+<p><strong>问题</strong>：出门在外，需要紧急登录服务器。</p>
+<p><strong>解决</strong>：手机上的 Tailscale + Termius（SSH 客户端）。</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 在手机上直接连接</span>
+ssh root@100.x.x.x</pre></div>
+<hr>
+<h2>高级配置</h2>
+<h3>1. ACL 访问控制</h3>
+<p>不同设备设置不同的访问权限：</p>
+<div class="highlight highlight-source-json"><pre class="notranslate"><span class="pl-ii">// ACL 示例（脱敏）</span>
+{
+  <span class="pl-ent">"groups"</span>: {
+    <span class="pl-ent">"group:admins"</span>: [<span class="pl-s"><span class="pl-pds">"</span>user:you@example.com<span class="pl-pds">"</span></span>],
+    <span class="pl-ent">"group:servers"</span>: [<span class="pl-s"><span class="pl-pds">"</span>server-a<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>server-b<span class="pl-pds">"</span></span>]
+  },
+  <span class="pl-ent">"acls"</span>: [
+    {<span class="pl-ent">"action"</span>: <span class="pl-s"><span class="pl-pds">"</span>accept<span class="pl-pds">"</span></span>, <span class="pl-ent">"src"</span>: [<span class="pl-s"><span class="pl-pds">"</span>group:admins<span class="pl-pds">"</span></span>], <span class="pl-ent">"dst"</span>: [<span class="pl-s"><span class="pl-pds">"</span>group:servers:*<span class="pl-pds">"</span></span>]},
+    {<span class="pl-ent">"action"</span>: <span class="pl-s"><span class="pl-pds">"</span>accept<span class="pl-pds">"</span></span>, <span class="pl-ent">"src"</span>: [<span class="pl-s"><span class="pl-pds">"</span>group:admins<span class="pl-pds">"</span></span>], <span class="pl-ent">"dst"</span>: [<span class="pl-s"><span class="pl-pds">"</span>*:*<span class="pl-pds">"</span></span>]}
+  ]
+}</pre></div>
+<h3>2. Subnet Router（子网路由）</h3>
+<p><strong>场景</strong>：让 Tailscale 网络访问整个云服务器所在的内网。</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 在云服务器上启用子网路由</span>
+sudo tailscale up --advertise-routes=10.0.0.0/24
+
+<span class="pl-c"><span class="pl-c">#</span> 在其他设备上接受路由</span>
+sudo tailscale up --accept-routes=10.0.0.0/24</pre></div>
+<h3>3. Exit Node（出口节点）</h3>
+<p><strong>场景</strong>：出门在外，通过家里的 Mac mini 上网（保护隐私）。</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> Mac mini 上启用出口节点</span>
+sudo tailscale up --advertise-exit-node
+
+<span class="pl-c"><span class="pl-c">#</span> 手机上选择 Mac mini 作为出口节点</span></pre></div>
+<hr>
+<h2>性能优化</h2>
+<h3>1. DERP 中继服务器</h3>
+<p>Tailscale 在国内访问速度较慢，可以配置 DERP 服务器：</p>
+<div class="highlight highlight-source-json"><pre class="notranslate">{
+  <span class="pl-ent">"derpMap"</span>: {
+    <span class="pl-ent">"OmitDefaultRegions"</span>: <span class="pl-c1">true</span>,
+    <span class="pl-ent">"Regions"</span>: {
+      <span class="pl-ent">"900"</span>: {
+        <span class="pl-ent">"RegionID"</span>: <span class="pl-c1">900</span>,
+        <span class="pl-ent">"RegionCode"</span>: <span class="pl-s"><span class="pl-pds">"</span>cn<span class="pl-pds">"</span></span>,
+        <span class="pl-ent">"RegionName"</span>: <span class="pl-s"><span class="pl-pds">"</span>China<span class="pl-pds">"</span></span>,
+        <span class="pl-ent">"Nodes"</span>: [
+          {
+            <span class="pl-ent">"Name"</span>: <span class="pl-s"><span class="pl-pds">"</span>cn1<span class="pl-pds">"</span></span>,
+            <span class="pl-ent">"RegionID"</span>: <span class="pl-c1">900</span>,
+            <span class="pl-ent">"HostName"</span>: <span class="pl-s"><span class="pl-pds">"</span>your-derp-server.com<span class="pl-pds">"</span></span>
+          }
+        ]
+      }
+    }
+  }
+}</pre></div>
+<p><strong>注</strong>：可以使用香港 VPS 搭建 DERP 服务器提升国内访问速度。</p>
+<h3>2. MTU 设置</h3>
+<p>网络性能不佳时，调整 MTU：</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> macOS</span>
+sudo ifconfig utun0 mtu 1280
+
+<span class="pl-c"><span class="pl-c">#</span> Linux</span>
+sudo ip link <span class="pl-c1">set</span> dev tailscale0 mtu 1280</pre></div>
+<hr>
+<h2>安全建议</h2>
+<ol>
+<li><strong>启用 ACL</strong>：限制设备间的访问权限</li>
+<li><strong>定期审计设备列表</strong>：移除不用的设备</li>
+<li><strong>密钥管理</strong>：私钥本地存储，不要泄露</li>
+<li><strong>监控日志</strong>：Tailscale 管理后台可查看连接日志</li>
+<li><strong>保护配置文件</strong>：ACL 等配置包含敏感信息，注意保密</li>
+</ol>
+<hr>
+<h2>常见问题</h2>
+<p><strong>Q: Tailscale 在国内速度慢？</strong></p>
+<p>A: 可以自建 DERP 中继服务器，或者使用香港节点的 VPS。</p>
+<p><strong>Q: 如何退出网络？</strong></p>
+<p>A:</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 退出但保留配置</span>
+sudo tailscale down
+
+<span class="pl-c"><span class="pl-c">#</span> 完全退出并删除设备</span>
+sudo tailscale <span class="pl-c1">logout</span></pre></div>
+<p><strong>Q: 免费版够用吗？</strong></p>
+<p>A: 个人使用完全够用，100 台设备额度很大。</p>
+<p><strong>Q: 如何查看设备 IP？</strong></p>
+<p>A:</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 列出所有设备</span>
+tailscale status
+
+<span class="pl-c"><span class="pl-c">#</span> 查看当前设备 IP</span>
+tailscale ip</pre></div>
+<hr>
+<h2>总结</h2>
+<p>Tailscale 让多台组网变得异常简单：</p>
+<ul>
+<li>✅ <strong>零配置</strong>：安装即用，无需折腾路由器</li>
+<li>✅ <strong>安全可靠</strong>：端到端加密，私钥不上传</li>
+<li>✅ <strong>跨平台</strong>：全平台支持，手机电脑无缝切换</li>
+<li>✅ <strong>免费够用</strong>：个人使用 100 台设备免费</li>
+</ul>
+<p><strong>适用场景</strong>：</p>
+<ul>
+<li>家庭服务器远程管理</li>
+<li>云服务器集群组网</li>
+<li>移动办公安全访问</li>
+<li>多设备文件同步</li>
+</ul>
+<p>如果你也有多台设备需要组网，强烈推荐试试 Tailscale！</p>
+<hr>
+<p><strong>相关资源</strong>：</p>
+<ul>
+<li><a href="https://tailscale.com" rel="nofollow">Tailscale 官网</a></li>
+<li><a href="https://tailscale.com/kb" rel="nofollow">Tailscale 文档</a></li>
+<li><a href="https://tailscale.com/kb/1118/derp" rel="nofollow">DERP 服务器搭建</a></li>
+</ul>
+<hr>
+<p><strong>隐私说明</strong>：本文中的 IP 地址、域名等敏感信息已脱敏处理，实际部署时请根据实际情况调整。</p></div>
+<div style="font-size:small;margin-top:8px;float:right;">❤️ 转载文章请注明出处，谢谢！❤️</div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://fxxsj.github.io">夜幕下的星光</a></div>
+<div id="footer2"><span id="filingNum"><a href="https://beian.miit.gov.cn/" target="_blank">浙ICP备20243628号</a> • </span>
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("03/30/2024"!=""){
+    var startSite=new Date("03/30/2024");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行 "+diffDay+" 天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z', 'copy': 'M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z', 'check': 'M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.disabled=true;
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","fxxsj/fxxsj.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const createClipboardHTML = (codeContent, additionalClasses = '') => `
+        <pre class="notranslate"><code class="notranslate">${codeContent}</code></pre>
+        <div class="clipboard-container position-absolute right-0 top-0 ${additionalClasses}">
+            <clipboard-copy class="ClipboardButton btn m-2 p-0" role="button" style="display: inherit;">
+                <svg height="16" width="16" class="octicon octicon-copy m-2"><path d="${IconList["copy"]}"></path></svg>
+                <svg height="16" width="16" class="octicon octicon-check color-fg-success m-2 d-none"><path d="${IconList["check"]}"></path></svg>
+            </clipboard-copy>
+            <div class="copy-feedback">Copied!</div>
+        </div>
+    `;
+
+    const handleCodeElements = (selector = '') => {
+        document.querySelectorAll(selector).forEach(codeElement => {
+            const codeContent = codeElement.innerHTML;
+            const newStructure = document.createElement('div');
+            newStructure.className = 'snippet-clipboard-content position-relative overflow-auto';
+            newStructure.innerHTML = createClipboardHTML(codeContent);
+
+            const parentElement = codeElement.parentElement;
+            if (selector.includes('highlight')) {
+                parentElement.insertBefore(newStructure, codeElement.nextSibling);
+                parentElement.removeChild(codeElement);
+            } else {
+                parentElement.parentElement.replaceChild(newStructure, parentElement);
+            }
+        });
+    };
+
+    handleCodeElements('pre.notranslate > code.notranslate');
+    handleCodeElements('div.highlight > pre.notranslate');
+
+    let currentFeedback = null;
+    document.querySelectorAll('clipboard-copy').forEach(copyButton => {
+        copyButton.addEventListener('click', () => {
+            const codeContent = copyButton.closest('.snippet-clipboard-content').innerText;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = codeContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            const copyIcon = copyButton.querySelector('.octicon-copy');
+            const checkIcon = copyButton.querySelector('.octicon-check');
+            const copyFeedback = copyButton.nextElementSibling;
+
+            if (currentFeedback && currentFeedback !== copyFeedback) {currentFeedback.style.display = 'none';}
+            currentFeedback = copyFeedback;
+
+            copyIcon.classList.add('d-none');
+            checkIcon.classList.remove('d-none');
+            copyFeedback.style.display = 'block';
+            copyButton.style.borderColor = 'var(--color-success-fg)';
+
+            setTimeout(() => {
+                copyIcon.classList.remove('d-none');
+                checkIcon.classList.add('d-none');
+                copyFeedback.style.display = 'none';
+                copyButton.style.borderColor = '';
+            }, 2000);
+        });
+    });
+});
+
+</script>
+
+
+</html>
