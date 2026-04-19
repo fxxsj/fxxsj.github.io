@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark_colorblind" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    
+    <link rel="icon" href="https://github.githubassets.com/favicons/favicon.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="<h1 id='redmi-k40-pro+-刷入-lineageos-22.2-完整教程' data-pm-slice='0 0 []' style='font-size:1.8em;font-weight:700;margin:1em 0 .5em;padding-bottom:.3em;border-bottom:1px solid #eee;'>Redmi K40 Pro+ 刷入 LineageOS 22.2 完整教程</h1><blockquote style='border-left:4px solid #ddd;padding-left:16px;margin:1em 0;color:#666;'><p style='margin:.5em 0;line-height:1.75;'><strong style='font-weight:600;'>设备信息</strong></p><ul data-spread='false' style='padding-left:24px;margin:.5em 0;'><li data-label='•' data-list-type='bullet' data-spread='false' style='margin:.25em 0;'><p style='margin:.5em 0;line-height:1.75;'>设备名称：Xiaomi Redmi K40 Pro+</p></li><li data-label='•' data-list-type='bullet' data-spread='false' style='margin:.25em 0;'><p style='margin:.5em 0;line-height:1.75;'>代号：haydn</p></li><li data-label='•' data-list-type='bullet' data-spread='false' style='margin:.25em 0;'><p style='margin:.5em 0;line-height:1.75;'>型号：M2012K11C（必须精确匹配）</p></li><li data-label='•' data-list-type='bullet' data-spread='false' style='margin:.25em 0;'><p style='margin:.5em 0;line-height:1.75;'>SoC：Qualcomm Snapdragon 888</p></li><li data-label='•' data-list-type='bullet' data-spread='false' style='margin:.25em 0;'><p style='margin:.5em 0;line-height:1.75;'>本教程基于 LineageOS 22.2，适用于 variant3（国行/海外版 M2012K11C）</p></li><li data-label='•' data-list-type='bullet' data-spread='false' style='margin:.25em 0;'><p style='margin:.5em 0;line-height:1.75;'>刷机环境：Linux Mint 22.3 x86_64</p></li></ul></blockquote><hr style='border:none;border-top:2px solid #ddd;margin:2em 0;'><h2 id='一、前置准备' style='font-size:1.4em;font-weight:600;margin:1em 0 .5em;padding-bottom:.25em;border-bottom:1px solid #eee;'>一、前置准备</h2><h3 id='1.-电脑端工具' style='font-size:1.2em;font-weight:600;margin:.8em 0 .4em;'>1. 电脑端工具</h3><pre data-language='bash' style='background:#f6f8fa;padding:16px;border-radius:6px;overflow-x:auto;margin:1em 0;'><code style='background:none;padding:0;font-size:.875em;line-height:1.6;font-family:Menlo,Monaco,monospace;'># 安装 adb 和 fastboot（Debian/Ubuntu/Mint）
+sudo apt install adb fastboot
+
+# 验证安装
+adb version
+fastboot --version</code></pre><h3 id='2.-配置-usb-udev-规则（linux）' style='font-size:1.2em;font-weight:600;margin:.8em 0 .4em;'>2. 配置 USB udev 规则（Linux）</h3><p style='margin:.5em 0;line-height:1.75;'>小米设备在 Fastboot/Recovery 模式下需要 udev 规则才能被普通用户识别：</p><pre data-language='bash' style='background:#f6f8fa;padding:16px;border-radius:6px;overflow-x:auto;margin:1em 0;'><code style='background:none;padding:0;font-size:.875em;line-height:1.6;font-family:Menlo,Monaco,monospace;'># 添加小米 vendor ID 规则
+echo 'SUBSYSTEM=='usb', ATTR{idVendor}=='18d1', MODE='0666', GROUP='plugdev'' | sudo tee /etc/udev/rules.d/51-android.rules
+
+# 重载规则
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+
+# 将当前用户加入 plugdev 组（重新登录后生效）
+sudo usermod -aG plugdev $USER</code></pre><blockquote style='border-left:4px solid #ddd;padding-left:16px;margin:1em 0;color:#666;'><p style='margin:.5em 0;line-height:1.75;'><strong style='font-weight:600;'>Windows 用户</strong>：需要安装 <a href='https://en.miui.com/unlock' style='color:#0969da;text-decoration:none;'>Mi Unlock 工具</a> 自带的驱动（driver_install_64.exe）。">
+<meta property="og:title" content="Redmi K40 Pro+ 刷入 LineageOS 22.2 完整教程">
+<meta property="og:description" content="<h1 id='redmi-k40-pro+-刷入-lineageos-22.2-完整教程' data-pm-slice='0 0 []' style='font-size:1.8em;font-weight:700;margin:1em 0 .5em;padding-bottom:.3em;border-bottom:1px solid #eee;'>Redmi K40 Pro+ 刷入 LineageOS 22.2 完整教程</h1><blockquote style='border-left:4px solid #ddd;padding-left:16px;margin:1em 0;color:#666;'><p style='margin:.5em 0;line-height:1.75;'><strong style='font-weight:600;'>设备信息</strong></p><ul data-spread='false' style='padding-left:24px;margin:.5em 0;'><li data-label='•' data-list-type='bullet' data-spread='false' style='margin:.25em 0;'><p style='margin:.5em 0;line-height:1.75;'>设备名称：Xiaomi Redmi K40 Pro+</p></li><li data-label='•' data-list-type='bullet' data-spread='false' style='margin:.25em 0;'><p style='margin:.5em 0;line-height:1.75;'>代号：haydn</p></li><li data-label='•' data-list-type='bullet' data-spread='false' style='margin:.25em 0;'><p style='margin:.5em 0;line-height:1.75;'>型号：M2012K11C（必须精确匹配）</p></li><li data-label='•' data-list-type='bullet' data-spread='false' style='margin:.25em 0;'><p style='margin:.5em 0;line-height:1.75;'>SoC：Qualcomm Snapdragon 888</p></li><li data-label='•' data-list-type='bullet' data-spread='false' style='margin:.25em 0;'><p style='margin:.5em 0;line-height:1.75;'>本教程基于 LineageOS 22.2，适用于 variant3（国行/海外版 M2012K11C）</p></li><li data-label='•' data-list-type='bullet' data-spread='false' style='margin:.25em 0;'><p style='margin:.5em 0;line-height:1.75;'>刷机环境：Linux Mint 22.3 x86_64</p></li></ul></blockquote><hr style='border:none;border-top:2px solid #ddd;margin:2em 0;'><h2 id='一、前置准备' style='font-size:1.4em;font-weight:600;margin:1em 0 .5em;padding-bottom:.25em;border-bottom:1px solid #eee;'>一、前置准备</h2><h3 id='1.-电脑端工具' style='font-size:1.2em;font-weight:600;margin:.8em 0 .4em;'>1. 电脑端工具</h3><pre data-language='bash' style='background:#f6f8fa;padding:16px;border-radius:6px;overflow-x:auto;margin:1em 0;'><code style='background:none;padding:0;font-size:.875em;line-height:1.6;font-family:Menlo,Monaco,monospace;'># 安装 adb 和 fastboot（Debian/Ubuntu/Mint）
+sudo apt install adb fastboot
+
+# 验证安装
+adb version
+fastboot --version</code></pre><h3 id='2.-配置-usb-udev-规则（linux）' style='font-size:1.2em;font-weight:600;margin:.8em 0 .4em;'>2. 配置 USB udev 规则（Linux）</h3><p style='margin:.5em 0;line-height:1.75;'>小米设备在 Fastboot/Recovery 模式下需要 udev 规则才能被普通用户识别：</p><pre data-language='bash' style='background:#f6f8fa;padding:16px;border-radius:6px;overflow-x:auto;margin:1em 0;'><code style='background:none;padding:0;font-size:.875em;line-height:1.6;font-family:Menlo,Monaco,monospace;'># 添加小米 vendor ID 规则
+echo 'SUBSYSTEM=='usb', ATTR{idVendor}=='18d1', MODE='0666', GROUP='plugdev'' | sudo tee /etc/udev/rules.d/51-android.rules
+
+# 重载规则
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+
+# 将当前用户加入 plugdev 组（重新登录后生效）
+sudo usermod -aG plugdev $USER</code></pre><blockquote style='border-left:4px solid #ddd;padding-left:16px;margin:1em 0;color:#666;'><p style='margin:.5em 0;line-height:1.75;'><strong style='font-weight:600;'>Windows 用户</strong>：需要安装 <a href='https://en.miui.com/unlock' style='color:#0969da;text-decoration:none;'>Mi Unlock 工具</a> 自带的驱动（driver_install_64.exe）。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://fxxsj.github.io/post/Redmi%20K40%20Pro%2B%20-shua-ru-%20LineageOS%2022.2%20-wan-zheng-jiao-cheng.html">
+<meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
+<title>Redmi K40 Pro+ 刷入 LineageOS 22.2 完整教程</title>
+<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+.copy-feedback {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 50px;
+    color: var(--color-fg-on-emphasis);
+    background-color: var(--color-fg-muted);
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-size: 12px;
+}
+</style>
+
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">Redmi K40 Pro+ 刷入 LineageOS 22.2 完整教程</h1>
+<div class="title-right">
+    <a href="https://fxxsj.github.io" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/fxxsj/fxxsj.github.io/issues/26" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><h1 id="user-content-redmi-k40-pro+-刷入-lineageos-22.2-完整教程">Redmi K40 Pro+ 刷入 LineageOS 22.2 完整教程</h1><blockquote><p><strong>设备信息</strong></p><ul><li><p>设备名称：Xiaomi Redmi K40 Pro+</p></li><li><p>代号：haydn</p></li><li><p>型号：M2012K11C（必须精确匹配）</p></li><li><p>SoC：Qualcomm Snapdragon 888</p></li><li><p>本教程基于 LineageOS 22.2，适用于 variant3（国行/海外版 M2012K11C）</p></li><li><p>刷机环境：Linux Mint 22.3 x86_64</p></li></ul></blockquote><hr><h2 id="user-content-一、前置准备">一、前置准备</h2><h3 id="user-content-1.-电脑端工具">1. 电脑端工具</h3><pre class="notranslate"><code class="notranslate"># 安装 adb 和 fastboot（Debian/Ubuntu/Mint）
+sudo apt install adb fastboot
+<h1>验证安装</h1>
+</code><p><code class="notranslate">adb version<br>
+fastboot --version</code></p></pre><h3 id="user-content-2.-配置-usb-udev-规则（linux）">2. 配置 USB udev 规则（Linux）</h3><p>小米设备在 Fastboot/Recovery 模式下需要 udev 规则才能被普通用户识别：</p><pre class="notranslate"><code class="notranslate"># 添加小米 vendor ID 规则<br>
+echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", MODE="0666", GROUP="plugdev"' | sudo tee /etc/udev/rules.d/51-android.rules<p></p>
+<h1>重载规则</h1>
+<p>sudo udevadm control --reload-rules<br>
+sudo udevadm trigger</p>
+<h1>将当前用户加入 plugdev 组（重新登录后生效）</h1>
+</code><p><code class="notranslate">sudo usermod -aG plugdev $USER</code></p></pre><blockquote><p><strong>Windows 用户</strong>：需要安装 <a href="https://en.miui.com/unlock" rel="nofollow">Mi Unlock 工具</a> 自带的驱动（driver_install_64.exe）。</p></blockquote><h3 id="user-content-3.-下载文件">3. 下载文件</h3><p>从 <a href="https://wiki.lineageos.org/devices/haydn/variant3/" rel="nofollow">LineageOS Wiki - haydn</a> 页面获取以下文件：</p><p></p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>文件</th>
+<th>说明</th>
+<th>大小参考</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dtbo.img</td>
+<td>设备树覆盖</td>
+<td>~24MB</td>
+</tr>
+<tr>
+<td>vendor_boot.img</td>
+<td>Vendor 引导镜像</td>
+<td>~96MB</td>
+</tr>
+<tr>
+<td>boot.img</td>
+<td>Lineage Recovery 镜像</td>
+<td>~192MB</td>
+</tr>
+<tr>
+<td>lineage-22.2-*-nightly-haydn-signed.zip</td>
+<td>LineageOS 系统包</td>
+<td>~1.5GB</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<hr><blockquote><p><strong>参考来源</strong>：<a href="https://wiki.lineageos.org/devices/haydn/variant3/" rel="nofollow">LineageOS Wiki - Xiaomi Redmi K40 Pro+ (haydn)</a></p><p><strong>最后更新</strong>：2026-04-19（基于实际刷机操作整理）</p></blockquote># Redmi K40 Pro+ 刷入 LineageOS 22.2 完整教程
+<blockquote>
+<p><strong>设备信息</strong></p>
+<ul>
+<li>
+<p>设备名称：Xiaomi Redmi K40 Pro+</p>
+</li>
+<li>
+<p>代号：haydn</p>
+</li>
+<li>
+<p>型号：M2012K11C（必须精确匹配）</p>
+</li>
+<li>
+<p>SoC：Qualcomm Snapdragon 888</p>
+</li>
+<li>
+<p>本教程基于 LineageOS 22.2，适用于 variant3（国行/海外版 M2012K11C）</p>
+</li>
+<li>
+<p>刷机环境：Linux Mint 22.3 x86_64</p>
+</li>
+</ul>
+</blockquote>
+<hr>
+<h2>一、前置准备</h2>
+<h3>1. 电脑端工具</h3>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 安装 adb 和 fastboot（Debian/Ubuntu/Mint）</span>
+sudo apt install adb fastboot
+
+<span class="pl-c"><span class="pl-c">#</span> 验证安装</span>
+adb version
+fastboot --version</pre></div>
+<h3>2. 配置 USB udev 规则（Linux）</h3>
+<p>小米设备在 Fastboot/Recovery 模式下需要 udev 规则才能被普通用户识别：</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 添加小米 vendor ID 规则</span>
+<span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">'</span>SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", MODE="0666", GROUP="plugdev"<span class="pl-pds">'</span></span> <span class="pl-k">|</span> sudo tee /etc/udev/rules.d/51-android.rules
+
+<span class="pl-c"><span class="pl-c">#</span> 重载规则</span>
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+
+<span class="pl-c"><span class="pl-c">#</span> 将当前用户加入 plugdev 组（重新登录后生效）</span>
+sudo usermod -aG plugdev <span class="pl-smi">$USER</span></pre></div>
+<blockquote>
+<p><strong>Windows 用户</strong>：需要安装 [<a href="https://en.miui.com/unlock" rel="nofollow">Mi Unlock 工具</a>](<a href="https://en.miui.com/unlock" rel="nofollow">https://en.miui.com/unlock</a>) 自带的驱动（driver_install_64.exe）。</p>
+</blockquote>
+<h3>3. 下载文件</h3>
+<p>从 [<a href="https://wiki.lineageos.org/devices/haydn/variant3/" rel="nofollow">LineageOS Wiki - haydn</a>](<a href="https://wiki.lineageos.org/devices/haydn/variant3/" rel="nofollow">https://wiki.lineageos.org/devices/haydn/variant3/</a>) 页面获取以下文件：</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>文件</th>
+<th>说明</th>
+<th>大小参考</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">dtbo.img</code></td>
+<td>设备树覆盖</td>
+<td>~24MB</td>
+</tr>
+<tr>
+<td><code class="notranslate">vendor_boot.img</code></td>
+<td>Vendor 引导镜像</td>
+<td>~96MB</td>
+</tr>
+<tr>
+<td><code class="notranslate">boot.img</code></td>
+<td>Lineage Recovery 镜像</td>
+<td>~192MB</td>
+</tr>
+<tr>
+<td><code class="notranslate">lineage-22.2-*-nightly-haydn-signed.zip</code></td>
+<td>LineageOS 系统包</td>
+<td>~1.5GB</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>如需 Google 服务，额外下载：</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>文件</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">MindTheGapps-15.0.0-arm64-*.zip</code></td>
+<td>GApps 附加包</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>下载地址：</p>
+<ul>
+<li>
+<p>LineageOS 系统：<a href="https://download.lineageos.org/devices/haydn" rel="nofollow">https://download.lineageos.org/devices/haydn</a></p>
+</li>
+<li>
+<p>dtbo/vendor_boot/boot(recovery)：Wiki 安装页面提供的链接</p>
+</li>
+<li>
+<p>GApps：<a href="https://wiki.lineageos.org/gapps/" rel="nofollow">https://wiki.lineageos.org/gapps/</a></p>
+</li>
+</ul>
+<h3>4. 手机端准备</h3>
+<ul class="contains-task-list">
+<li class="task-list-item">
+<p><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Incomplete task"> 在 <strong>设置 → 关于手机</strong> 中确认型号为 <strong>M2012K11C</strong></p>
+</li>
+<li class="task-list-item">
+<p><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Incomplete task"> 使用原厂系统至少开机一次，测试收发短信、通话、WiFi、LTE 功能正常</p>
+</li>
+<li class="task-list-item">
+<p><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Incomplete task"> <strong>确保固件版本为 Android 14</strong>，如果不是，先升级/降级到 Android 14 的官方系统</p>
+</li>
+<li class="task-list-item">
+<p><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Incomplete task"> 删除所有 Google 账号（避免 FRP 锁）</p>
+</li>
+<li class="task-list-item">
+<p><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Incomplete task"> 开启 USB 调试：<strong>设置 → 关于手机 → 连续点击 MIUI 版本</strong> 开启开发者选项 → <strong>设置 → 额外设置 → 开发者选项 → 开启 USB 调试</strong></p>
+</li>
+</ul>
+<hr>
+<h2>二、解锁 Bootloader</h2>
+<blockquote>
+<p><strong>解锁会清除所有数据！</strong> 请提前备份手机中的重要文件。<br>
+<strong>此步骤需要 Windows 7+ 电脑</strong>，使用小米官方 Mi Unlock 工具。</p>
+</blockquote>
+<h3>国行设备额外要求（2023年11月8日后的 HyperOS）</h3>
+<p>如果你的设备使用的是 2023年11月8日之后的中国版 HyperOS，需要先通过小米社区 App 申请解锁资格：</p>
+<ol>
+<li>在小米社区 App 注册中国区账号并完成实名认证</li>
+<li>达到社区 Level 5</li>
+<li>通过安卓知识测试（每次测试间隔至少 7 天）</li>
+<li>通过后 14 天内完成解锁</li>
+</ol>
+<h3>解锁步骤</h3>
+<ol>
+<li>
+<p>在 [<a href="https://account.xiaomi.com/" rel="nofollow">小米官网</a>](<a href="https://account.xiaomi.com/" rel="nofollow">https://account.xiaomi.com/</a>) 注册 Mi 账号并绑定手机号</p>
+<ul>
+<li>一个账号每年最多解锁 4 台设备，同一设备每 30 天只能解锁一次</li>
+</ul>
+</li>
+<li>
+<p>手机插入 SIM 卡</p>
+</li>
+<li>
+<p><strong>设置 → 额外设置 → 开发者选项 → Mi Unlock 状态 → 绑定设备和账号</strong></p>
+</li>
+<li>
+<p>下载 [<a href="https://en.miui.com/unlock" rel="nofollow">Mi Unlock 工具</a>](<a href="https://en.miui.com/unlock)%EF%BC%88%E6%8E%A8%E8%8D%90" rel="nofollow">https://en.miui.com/unlock)（推荐</a> v7.6.727.43 或更新版本）</p>
+</li>
+<li>
+<p>运行 <code class="notranslate">driver_install_64.exe</code> 安装驱动</p>
+</li>
+<li>
+<p>手机关机，<strong>按住 音量下 + 电源</strong> 进入 Fastboot 模式，用 USB 连接电脑</p>
+</li>
+<li>
+<p>运行 Mi Unlock，按提示操作</p>
+<ul>
+<li>
+<p>可能需要等待最多 30 天</p>
+</li>
+<li>
+<p>建议每天午夜（GMT+8）尝试，小米每日解锁名额有限</p>
+</li>
+</ul>
+</li>
+<li>
+<p>解锁成功后手机会恢复出厂设置，<strong>重新开启 USB 调试</strong></p>
+</li>
+</ol>
+<hr>
+<h2>三、刷入额外分区</h2>
+<p>手机进入 Fastboot 模式（关机后按住 <strong>音量下 + 电源</strong> 直到出现 "FASTBOOT"），用 USB 连接电脑。</p>
+<p>验证连接：</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">fastboot devices
+<span class="pl-c"><span class="pl-c">#</span> 应显示设备序列号</span></pre></div>
+<p>刷入 dtbo 和 vendor_boot：</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c1">cd</span> <span class="pl-k">~</span>/下载    <span class="pl-c"><span class="pl-c">#</span> 或文件所在目录</span>
+
+fastboot flash dtbo dtbo.img
+fastboot flash vendor_boot vendor_boot.img</pre></div>
+<p>重启回 Bootloader：</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">fastboot reboot bootloader</pre></div>
+<p>等待设备重新出现在 <code class="notranslate">fastboot devices</code> 中后继续下一步。</p>
+<hr>
+<h2>四、刷入 Lineage Recovery</h2>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 同时刷入 boot_a 和 boot_b，避免因启动槽位不同导致 recovery 无法启动</span>
+fastboot flash boot_a boot.img
+fastboot flash boot_b boot.img</pre></div>
+<p>重启进入 Recovery：</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">fastboot reboot recovery</pre></div>
+<blockquote>
+<p><strong>验证</strong>：手机应显示 LineageOS logo。如果没有，说明 recovery 刷入失败，需要重新从第三步开始。</p>
+</blockquote>
+<hr>
+<h2>五、安装 LineageOS</h2>
+<h3>5.1 格式化数据</h3>
+<p>在 Recovery 中操作：</p>
+<ol>
+<li>选择 <strong>Factory Reset → Format data / factory reset</strong></li>
+<li>确认执行（会清除所有数据并移除加密）</li>
+<li>完成后返回主菜单</li>
+</ol>
+<h3>5.2 Sideload 系统包</h3>
+<p>在 Recovery 中选择 <strong>Apply update → Apply from ADB</strong>，然后电脑端执行：</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">adb -d sideload /path/to/lineage-22.2-<span class="pl-k">*</span>-nightly-haydn-signed.zip</pre></div>
+<blockquote>
+<p>刷完后可能停在 47% 并显示 <code class="notranslate">adb: failed to read command: Success</code>，这是正常现象，表示刷入已成功。</p>
+</blockquote>
+<hr>
+<h2>六、安装 GApps（可选）</h2>
+<blockquote>
+<p>GApps 必须在首次启动 LineageOS 之前安装！</p>
+</blockquote>
+<p>如果需要 Google 服务（Play Store、Gmail 等）：</p>
+<ol>
+<li>Recovery 中选择 <strong>Apply update → Apply from ADB</strong></li>
+<li>电脑端执行：</li>
+</ol>
+<div class="highlight highlight-source-shell"><pre class="notranslate">adb -d sideload /path/to/MindTheGapps-15.0.0-arm64-<span class="pl-k">*</span>.zip</pre></div>
+<ol>
+<li>手机弹出 <strong>"Signature verification failed"</strong> 时，选择 <strong>Yes</strong>（GApps 没有 LineageOS 签名是正常的）</li>
+</ol>
+<hr>
+<h2>七、首次启动</h2>
+<p>在 Recovery 主菜单中：</p>
+<ol>
+<li>点击左上角 <strong>返回箭头</strong></li>
+<li>选择 <strong>Reboot system now</strong></li>
+</ol>
+<p>首次启动通常需要 <strong>3-15 分钟</strong>，耐心等待。如果超过 15 分钟仍未进入系统，可能遗漏了某个步骤。</p>
+<hr>
+<h2>八、刷机后注意事项</h2>
+<ul>
+<li>
+<p><strong>设备完整性</strong>：LineageOS 无法通过 Play Integrity 等设备完整性检测，部分银行 App、游戏等可能无法正常运行</p>
+</li>
+<li>
+<p><strong>每次开机警告</strong>：解锁 Bootloader 后每次开机会有警告画面，这是正常的，无法消除</p>
+</li>
+<li>
+<p><strong>不要随意删除系统应用</strong>：LineageOS 已只包含最少的应用集，删除可能导致系统异常</p>
+</li>
+<li>
+<p><strong>Root</strong>：LineageOS 官方不提供 Root 支持，自行 Root 后不在官方支持范围内</p>
+</li>
+<li>
+<p><strong>系统更新</strong>：可以通过 OTA 更新到同版本的更新构建，也可以通过 recovery sideload 方式升级</p>
+</li>
+</ul>
+<hr>
+<h2>九、常用命令速查</h2>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 进入 Fastboot 模式（手机关机状态）</span>
+<span class="pl-c"><span class="pl-c">#</span> 按住 音量下 + 电源</span>
+
+<span class="pl-c"><span class="pl-c">#</span> 进入 Recovery 模式（手机关机状态）</span>
+<span class="pl-c"><span class="pl-c">#</span> 按住 音量上 + 电源</span>
+
+<span class="pl-c"><span class="pl-c">#</span> 验证设备连接</span>
+fastboot devices
+adb devices
+
+<span class="pl-c"><span class="pl-c">#</span> 刷入分区</span>
+fastboot flash <span class="pl-k">&lt;</span>分区名<span class="pl-k">&gt;</span> <span class="pl-k">&lt;</span>镜像文件<span class="pl-k">&gt;</span>
+
+<span class="pl-c"><span class="pl-c">#</span> Sideload 刷机包</span>
+adb -d sideload /path/to/package.zip
+
+<span class="pl-c"><span class="pl-c">#</span> 重启</span>
+fastboot reboot              <span class="pl-c"><span class="pl-c">#</span> 重启到系统</span>
+fastboot reboot bootloader   <span class="pl-c"><span class="pl-c">#</span> 重启到 Fastboot</span>
+fastboot reboot recovery     <span class="pl-c"><span class="pl-c">#</span> 重启到 Recovery</span></pre></div>
+<hr>
+<h2>十、问题排查</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>问题</th>
+<th>解决方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">fastboot devices</code> 无设备</td>
+<td>检查 USB 连接、udev 规则、驱动是否安装</td>
+</tr>
+<tr>
+<td><code class="notranslate">adb devices</code> 显示 unauthorized</td>
+<td>查看手机屏幕是否有授权弹窗，确认允许</td>
+</tr>
+<tr>
+<td>刷入 recovery 后仍进入 Fastboot</td>
+<td>尝试同时刷入 boot_a 和 boot_b</td>
+</tr>
+<tr>
+<td><code class="notranslate">adb: failed to read command: Success</code></td>
+<td>正常现象，sideload 已完成</td>
+</tr>
+<tr>
+<td>Signature verification failed</td>
+<td>GApps 附加包的正常提示，选 Yes 继续</td>
+</tr>
+<tr>
+<td>首次启动超过 15 分钟</td>
+<td>可能遗漏步骤，重新检查或到 [<a href="https://reddit.com/r/LineageOS" rel="nofollow">LineageOS 社区</a>](<a href="https://reddit.com/r/LineageOS" rel="nofollow">https://reddit.com/r/LineageOS</a>) 寻求帮助</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<hr>
+<blockquote>
+<p><strong>参考来源</strong>：[<a href="https://wiki.lineageos.org/devices/haydn/variant3/" rel="nofollow">LineageOS Wiki - Xiaomi Redmi K40 Pro+ (haydn)</a>](<a href="https://wiki.lineageos.org/devices/haydn/variant3/" rel="nofollow">https://wiki.lineageos.org/devices/haydn/variant3/</a>)</p>
+<p><strong>最后更新</strong>：2026-04-19（基于实际刷机操作整理）</p>
+</blockquote></div>
+<div style="font-size:small;margin-top:8px;float:right;">❤️ 转载文章请注明出处，谢谢！❤️</div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://fxxsj.github.io">夜幕下的星光</a></div>
+<div id="footer2"><span id="filingNum"><a href="https://beian.miit.gov.cn/" target="_blank">浙ICP备20243628号</a> • </span>
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("03/30/2024"!=""){
+    var startSite=new Date("03/30/2024");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行 "+diffDay+" 天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z', 'copy': 'M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z', 'check': 'M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.disabled=true;
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","fxxsj/fxxsj.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const createClipboardHTML = (codeContent, additionalClasses = '') => `
+        <pre class="notranslate"><code class="notranslate">${codeContent}</code></pre>
+        <div class="clipboard-container position-absolute right-0 top-0 ${additionalClasses}">
+            <clipboard-copy class="ClipboardButton btn m-2 p-0" role="button" style="display: inherit;">
+                <svg height="16" width="16" class="octicon octicon-copy m-2"><path d="${IconList["copy"]}"></path></svg>
+                <svg height="16" width="16" class="octicon octicon-check color-fg-success m-2 d-none"><path d="${IconList["check"]}"></path></svg>
+            </clipboard-copy>
+            <div class="copy-feedback">Copied!</div>
+        </div>
+    `;
+
+    const handleCodeElements = (selector = '') => {
+        document.querySelectorAll(selector).forEach(codeElement => {
+            const codeContent = codeElement.innerHTML;
+            const newStructure = document.createElement('div');
+            newStructure.className = 'snippet-clipboard-content position-relative overflow-auto';
+            newStructure.innerHTML = createClipboardHTML(codeContent);
+
+            const parentElement = codeElement.parentElement;
+            if (selector.includes('highlight')) {
+                parentElement.insertBefore(newStructure, codeElement.nextSibling);
+                parentElement.removeChild(codeElement);
+            } else {
+                parentElement.parentElement.replaceChild(newStructure, parentElement);
+            }
+        });
+    };
+
+    handleCodeElements('pre.notranslate > code.notranslate');
+    handleCodeElements('div.highlight > pre.notranslate');
+
+    let currentFeedback = null;
+    document.querySelectorAll('clipboard-copy').forEach(copyButton => {
+        copyButton.addEventListener('click', () => {
+            const codeContent = copyButton.closest('.snippet-clipboard-content').innerText;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = codeContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            const copyIcon = copyButton.querySelector('.octicon-copy');
+            const checkIcon = copyButton.querySelector('.octicon-check');
+            const copyFeedback = copyButton.nextElementSibling;
+
+            if (currentFeedback && currentFeedback !== copyFeedback) {currentFeedback.style.display = 'none';}
+            currentFeedback = copyFeedback;
+
+            copyIcon.classList.add('d-none');
+            checkIcon.classList.remove('d-none');
+            copyFeedback.style.display = 'block';
+            copyButton.style.borderColor = 'var(--color-success-fg)';
+
+            setTimeout(() => {
+                copyIcon.classList.remove('d-none');
+                checkIcon.classList.add('d-none');
+                copyFeedback.style.display = 'none';
+                copyButton.style.borderColor = '';
+            }, 2000);
+        });
+    });
+});
+
+</script>
+
+
+</html>
