@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark_colorblind" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    
+    <link rel="icon" href="https://github.githubassets.com/favicons/favicon.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="# OpenClaw 入门指南：打造你的私人 AI 助理
+
+## 前言：为什么需要个人 AI 助理？
+
+在 AI 技术飞速发展的今天，我们每天都在与各种 AI 服务打交道：ChatGPT、Claude、文心一言……但你是否想过，这些服务都有一个共同的问题——你的数据需要上传到云端，你的对话历史被存储在别人的服务器上，你的使用受限于网络连接和订阅费用？
+
+想象一下，如果有一个 AI 助理：
+- **完全属于你**：数据存储在你的本地设备，隐私完全受控
+- **永远在线**：通过 Telegram、WhatsApp 等你常用的应用随时访问
+- **功能强大**：不仅会聊天，还能定时提醒、自动搜索、操作你的电脑
+- **高度定制**：你可以给它添加各种工具和技能，让它越来越懂你
+
+这就是 OpenClaw 存在的意义——一个开源的、本地优先的个人 AI 助理框架，让你拥有真正属于自己的智能助理。">
+<meta property="og:title" content="OpenClaw 入门指南：打造你的私人 AI 助理">
+<meta property="og:description" content="# OpenClaw 入门指南：打造你的私人 AI 助理
+
+## 前言：为什么需要个人 AI 助理？
+
+在 AI 技术飞速发展的今天，我们每天都在与各种 AI 服务打交道：ChatGPT、Claude、文心一言……但你是否想过，这些服务都有一个共同的问题——你的数据需要上传到云端，你的对话历史被存储在别人的服务器上，你的使用受限于网络连接和订阅费用？
+
+想象一下，如果有一个 AI 助理：
+- **完全属于你**：数据存储在你的本地设备，隐私完全受控
+- **永远在线**：通过 Telegram、WhatsApp 等你常用的应用随时访问
+- **功能强大**：不仅会聊天，还能定时提醒、自动搜索、操作你的电脑
+- **高度定制**：你可以给它添加各种工具和技能，让它越来越懂你
+
+这就是 OpenClaw 存在的意义——一个开源的、本地优先的个人 AI 助理框架，让你拥有真正属于自己的智能助理。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://fxxsj.github.io/post/OpenClaw%20-ru-men-zhi-nan-%EF%BC%9A-da-zao-ni-de-si-ren-%20AI%20-zhu-li.html">
+<meta property="og:image" content="https://github.githubassets.com/favicons/favicon.svg">
+<title>OpenClaw 入门指南：打造你的私人 AI 助理</title>
+<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+.copy-feedback {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 50px;
+    color: var(--color-fg-on-emphasis);
+    background-color: var(--color-fg-muted);
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-size: 12px;
+}
+</style>
+
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">OpenClaw 入门指南：打造你的私人 AI 助理</h1>
+<div class="title-right">
+    <a href="https://fxxsj.github.io" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/fxxsj/fxxsj.github.io/issues/20" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><h1>OpenClaw 入门指南：打造你的私人 AI 助理</h1>
+<h2>前言：为什么需要个人 AI 助理？</h2>
+<p>在 AI 技术飞速发展的今天，我们每天都在与各种 AI 服务打交道：ChatGPT、Claude、文心一言……但你是否想过，这些服务都有一个共同的问题——你的数据需要上传到云端，你的对话历史被存储在别人的服务器上，你的使用受限于网络连接和订阅费用？</p>
+<p>想象一下，如果有一个 AI 助理：</p>
+<ul>
+<li><strong>完全属于你</strong>：数据存储在你的本地设备，隐私完全受控</li>
+<li><strong>永远在线</strong>：通过 Telegram、WhatsApp 等你常用的应用随时访问</li>
+<li><strong>功能强大</strong>：不仅会聊天，还能定时提醒、自动搜索、操作你的电脑</li>
+<li><strong>高度定制</strong>：你可以给它添加各种工具和技能，让它越来越懂你</li>
+</ul>
+<p>这就是 OpenClaw 存在的意义——一个开源的、本地优先的个人 AI 助理框架，让你拥有真正属于自己的智能助理。</p>
+<hr>
+<h2>一、OpenClaw 是什么？</h2>
+<p>OpenClaw 是一个<strong>本地优先的个人 AI 助理框架</strong>。简单来说，它是一个运行在你自己设备上的 AI 中枢，可以连接你常用的聊天应用（Telegram、Discord、WhatsApp 等），并通过丰富的工具系统执行各种任务。</p>
+<h3>核心理念</h3>
+<ol>
+<li><strong>本地优先</strong>：数据存储在你的设备上，你不只是一个用户，而是拥有者</li>
+<li><strong>渠道无关</strong>：无论你用 Telegram 还是 Discord，体验一致，数据互通</li>
+<li><strong>可扩展</strong>：通过插件和工具系统，你可以为 AI 添加任何你能想到的能力</li>
+<li><strong>开源自由</strong>：完全开源，你可以自由修改、定制，甚至贡献代码</li>
+</ol>
+<hr>
+<h2>二、核心特点</h2>
+<h3>1. 多渠道消息接入</h3>
+<p>OpenClaw 支持多种聊天平台，你可以在任何地方与你的 AI 助理对话：</p>
+<ul>
+<li><strong>Telegram</strong>：最常用的接入方式，稳定、快速</li>
+<li><strong>Discord</strong>：适合在社区中使用</li>
+<li><strong>WhatsApp</strong>：随时随地的移动端访问</li>
+<li>更多平台持续开发中...</li>
+</ul>
+<p>所有渠道共享同一个 AI 大脑和记忆系统，无论你在哪里对话，它都记得你。</p>
+<h3>2. 定时任务系统</h3>
+<p>需要定时提醒？定期检查邮件？每天生成报告？OpenClaw 内置了强大的 Cron 系统：</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 每天早上 9 点提醒我喝水</span>
+openclaw cron add --schedule <span class="pl-s"><span class="pl-pds">"</span>0 9 * * *<span class="pl-pds">"</span></span> --message <span class="pl-s"><span class="pl-pds">"</span>记得喝水！💧<span class="pl-pds">"</span></span>
+
+<span class="pl-c"><span class="pl-c">#</span> 每周一早上 8 点总结本周待办</span>
+openclaw cron add --schedule <span class="pl-s"><span class="pl-pds">"</span>0 8 * * 1<span class="pl-pds">"</span></span> --prompt <span class="pl-s"><span class="pl-pds">"</span>帮我总结本周的待办事项<span class="pl-pds">"</span></span></pre></div>
+<h3>3. 工具调用系统</h3>
+<p>OpenClaw 最强大的地方在于它的工具系统。AI 可以调用各种预定义工具来完成实际任务：</p>
+<ul>
+<li><strong>文件操作</strong>：读取、编辑、创建文件</li>
+<li><strong>命令执行</strong>：在终端运行命令</li>
+<li><strong>网络搜索</strong>：获取最新信息</li>
+<li><strong>浏览器控制</strong>：自动化网页操作</li>
+<li><strong>日历管理</strong>：创建和查看日程</li>
+<li><strong>邮件处理</strong>：读取和发送邮件</li>
+</ul>
+<p>这些工具让 AI 从一个"聊天机器人"变成了真正的"数字助理"。</p>
+<h3>4. 记忆系统</h3>
+<p>OpenClaw 拥有持久的记忆系统：</p>
+<ul>
+<li><strong>短期记忆</strong>：记录最近发生的对话和事件</li>
+<li><strong>长期记忆</strong>：记住你的偏好、习惯、决策历史</li>
+<li><strong>知识库</strong>：可以接入你的笔记、文档作为知识来源</li>
+</ul>
+<p>这意味着随着使用时间的增加，你的 AI 助理会越来越懂你。</p>
+<hr>
+<h2>三、安装步骤</h2>
+<h3>前置要求</h3>
+<p>在安装 OpenClaw 之前，你需要：</p>
+<ul>
+<li><strong>Node.js</strong> 18.x 或更高版本</li>
+<li><strong>npm</strong> 或其他 Node.js 包管理器</li>
+<li>（可选）一个 Telegram 账号</li>
+</ul>
+<h3>快速安装</h3>
+<p>打开终端，运行：</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">npm install -g openclaw</pre></div>
+<p>安装完成后，验证安装：</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">openclaw --version</pre></div>
+<p>你应该会看到版本号输出。</p>
+<h3>初始化配置</h3>
+<p>首次使用需要创建配置文件：</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">openclaw init</pre></div>
+<p>这会在 <code class="notranslate">~/.openclaw/</code> 目录下创建配置文件和必要的目录结构。</p>
+<hr>
+<h2>四、基本配置（Telegram 接入示例）</h2>
+<p>让我们以 Telegram 为例，演示如何配置 OpenClaw。</p>
+<h3>1. 获取 Telegram Bot Token</h3>
+<ol>
+<li>在 Telegram 中搜索 <a href="https://t.me/BotFather" rel="nofollow">@BotFather</a></li>
+<li>发送 <code class="notranslate">/newbot</code> 命令</li>
+<li>按提示设置 bot 的名称和用户名</li>
+<li>BotFather 会给你一个 <strong>Token</strong>，格式类似 <code class="notranslate">123456789:ABCdefGHIjklMNOpqrsTUVwxyz</code></li>
+</ol>
+<h3>2. 配置 OpenClaw</h3>
+<p>编辑配置文件 <code class="notranslate">~/.openclaw/openclaw.json</code>：</p>
+<div class="highlight highlight-source-json"><pre class="notranslate">{
+  <span class="pl-ent">"channels"</span>: {
+    <span class="pl-ent">"telegram"</span>: {
+      <span class="pl-ent">"enabled"</span>: <span class="pl-c1">true</span>,
+      <span class="pl-ent">"token"</span>: <span class="pl-s"><span class="pl-pds">"</span>你的_Telegram_Bot_Token<span class="pl-pds">"</span></span>
+    }
+  },
+  <span class="pl-ent">"llm"</span>: {
+    <span class="pl-ent">"provider"</span>: <span class="pl-s"><span class="pl-pds">"</span>anthropic<span class="pl-pds">"</span></span>,
+    <span class="pl-ent">"apiKey"</span>: <span class="pl-s"><span class="pl-pds">"</span>你的_Anthropic_API_Key<span class="pl-pds">"</span></span>
+  }
+}</pre></div>
+<h3>3. 启动服务</h3>
+<div class="highlight highlight-source-shell"><pre class="notranslate">openclaw gateway start</pre></div>
+<h3>4. 开始使用</h3>
+<p>在 Telegram 中找到你刚创建的 Bot，发送任意消息，你的 AI 助理就上线了！</p>
+<hr>
+<h2>五、简单使用示例</h2>
+<h3>示例 1：智能对话</h3>
+<p>直接与 AI 聊天，它可以回答问题、提供建议：</p>
+<pre class="notranslate"><code class="notranslate">你：帮我总结一下今天的技术新闻
+AI：[会搜索并总结当天的重要技术资讯]
+
+你：我最近在学 Rust，有什么推荐的学习路径吗？
+AI：[会提供详细的 Rust 学习建议和资源]
+</code></pre>
+<h3>示例 2：文件操作</h3>
+<pre class="notranslate"><code class="notranslate">你：帮我创建一个今天的日记文件
+AI：[会在 ~/.openclaw/workspace/memory/ 目录下创建 2026-02-09.md]
+
+你：把我们的对话记录保存下来
+AI：[会追加到相应的记忆文件中]
+</code></pre>
+<h3>示例 3：定时任务</h3>
+<pre class="notranslate"><code class="notranslate">你：每天早上 8 点提醒我查看 GitHub 通知
+AI：[会创建一个 cron 任务，定时执行]
+</code></pre>
+<h3>示例 4：信息检索</h3>
+<pre class="notranslate"><code class="notranslate">你：我上周说过要买什么书吗？
+AI：[会搜索记忆文件，找到相关记录]
+</code></pre>
+<hr>
+<h2>六、进阶玩法预告</h2>
+<p>当你熟悉了基础用法后，OpenClaw 还有更多强大的功能等待探索：</p>
+<h3>1. Agent 系统</h3>
+<p>OpenClaw 支持创建专门的 Agent 来处理特定任务：</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 创建一个专门写技术博客的 Agent</span>
+openclaw agent create tech-writer \
+  --role <span class="pl-s"><span class="pl-pds">"</span>技术博客作者<span class="pl-pds">"</span></span> \
+  --style <span class="pl-s"><span class="pl-pds">"</span>专业但易懂<span class="pl-pds">"</span></span></pre></div>
+<h3>2. 自动化工作流</h3>
+<p>将多个任务串联起来，形成自动化工作流：</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> 每天早上自动生成日报并发送到 Telegram</span>
+openclaw workflow create daily-report \
+  --steps <span class="pl-s"><span class="pl-pds">"</span>fetch-email, summarize, send-telegram<span class="pl-pds">"</span></span> \
+  --schedule <span class="pl-s"><span class="pl-pds">"</span>0 9 * * *<span class="pl-pds">"</span></span></pre></div>
+<h3>3. 自定义工具</h3>
+<p>你可以编写自己的工具，扩展 AI 的能力：</p>
+<div class="highlight highlight-source-js"><pre class="notranslate"><span class="pl-c">// ~/.openclaw/tools/weather.js</span>
+<span class="pl-smi">module</span><span class="pl-kos">.</span><span class="pl-c1">exports</span> <span class="pl-c1">=</span> <span class="pl-kos">{</span>
+  <span class="pl-c1">name</span>: <span class="pl-s">'get_weather'</span><span class="pl-kos">,</span>
+  <span class="pl-c1">description</span>: <span class="pl-s">'获取指定城市的天气'</span><span class="pl-kos">,</span>
+  <span class="pl-c1">parameters</span>: <span class="pl-kos">{</span>
+    <span class="pl-c1">city</span>: <span class="pl-kos">{</span> <span class="pl-c1">type</span>: <span class="pl-s">'string'</span><span class="pl-kos">,</span> <span class="pl-c1">required</span>: <span class="pl-c1">true</span> <span class="pl-kos">}</span>
+  <span class="pl-kos">}</span><span class="pl-kos">,</span>
+  <span class="pl-en">execute</span>: <span class="pl-k">async</span> <span class="pl-kos">(</span><span class="pl-kos">{</span> city <span class="pl-kos">}</span><span class="pl-kos">)</span> <span class="pl-c1">=&gt;</span> <span class="pl-kos">{</span>
+    <span class="pl-c">// 调用天气 API</span>
+    <span class="pl-k">return</span> <span class="pl-s">`今天 <span class="pl-s1"><span class="pl-kos">${</span><span class="pl-s1">city</span><span class="pl-kos">}</span></span> 的天气是晴天，25°C`</span><span class="pl-kos">;</span>
+  <span class="pl-kos">}</span>
+<span class="pl-kos">}</span><span class="pl-kos">;</span></pre></div>
+<h3>4. 知识库集成</h3>
+<p>接入你的 Notion、Obsidian、Feishu 等知识库，让 AI 基于你的个人知识回答问题。</p>
+<hr>
+<h2>七、总结</h2>
+<p>OpenClaw 不仅仅是一个聊天机器人框架，它是你构建个人数字助手的基石。通过本地优先的设计、强大的工具系统和灵活的扩展能力，它可以随着你的需求不断进化。</p>
+<p>从简单的定时提醒，到复杂的自动化工作流；从个人知识管理，到团队协作助手——OpenClaw 的可能性只受你的想象力限制。</p>
+<h3>下一步行动</h3>
+<ol>
+<li><strong>安装体验</strong>：运行 <code class="notranslate">npm install -g openclaw</code> 开始你的旅程</li>
+<li><strong>阅读文档</strong>：访问 <a href="https://docs.openclaw.ai" rel="nofollow">OpenClaw 官方文档</a> 了解更多</li>
+<li><strong>加入社区</strong>：在 GitHub 上提 Issue、讨论，与其他用户交流经验</li>
+<li><strong>动手实践</strong>：从最简单的对话开始，逐步探索更高级的功能</li>
+</ol>
+<hr>
+<p><strong>开始打造属于你自己的 AI 助理吧！</strong> 🚀</p>
+<hr>
+<p><em>本文由 OpenClaw 用户社区贡献。如果你有任何问题或建议，欢迎在 GitHub Issues 中讨论。</em></p></div>
+<div style="font-size:small;margin-top:8px;float:right;">❤️ 转载文章请注明出处，谢谢！❤️</div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://fxxsj.github.io">夜幕下的星光</a></div>
+<div id="footer2"><span id="filingNum"><a href="https://beian.miit.gov.cn/" target="_blank">浙ICP备20243628号</a> • </span>
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("03/30/2024"!=""){
+    var startSite=new Date("03/30/2024");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行 "+diffDay+" 天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z', 'copy': 'M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z', 'check': 'M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.disabled=true;
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","fxxsj/fxxsj.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const createClipboardHTML = (codeContent, additionalClasses = '') => `
+        <pre class="notranslate"><code class="notranslate">${codeContent}</code></pre>
+        <div class="clipboard-container position-absolute right-0 top-0 ${additionalClasses}">
+            <clipboard-copy class="ClipboardButton btn m-2 p-0" role="button" style="display: inherit;">
+                <svg height="16" width="16" class="octicon octicon-copy m-2"><path d="${IconList["copy"]}"></path></svg>
+                <svg height="16" width="16" class="octicon octicon-check color-fg-success m-2 d-none"><path d="${IconList["check"]}"></path></svg>
+            </clipboard-copy>
+            <div class="copy-feedback">Copied!</div>
+        </div>
+    `;
+
+    const handleCodeElements = (selector = '') => {
+        document.querySelectorAll(selector).forEach(codeElement => {
+            const codeContent = codeElement.innerHTML;
+            const newStructure = document.createElement('div');
+            newStructure.className = 'snippet-clipboard-content position-relative overflow-auto';
+            newStructure.innerHTML = createClipboardHTML(codeContent);
+
+            const parentElement = codeElement.parentElement;
+            if (selector.includes('highlight')) {
+                parentElement.insertBefore(newStructure, codeElement.nextSibling);
+                parentElement.removeChild(codeElement);
+            } else {
+                parentElement.parentElement.replaceChild(newStructure, parentElement);
+            }
+        });
+    };
+
+    handleCodeElements('pre.notranslate > code.notranslate');
+    handleCodeElements('div.highlight > pre.notranslate');
+
+    let currentFeedback = null;
+    document.querySelectorAll('clipboard-copy').forEach(copyButton => {
+        copyButton.addEventListener('click', () => {
+            const codeContent = copyButton.closest('.snippet-clipboard-content').innerText;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = codeContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            const copyIcon = copyButton.querySelector('.octicon-copy');
+            const checkIcon = copyButton.querySelector('.octicon-check');
+            const copyFeedback = copyButton.nextElementSibling;
+
+            if (currentFeedback && currentFeedback !== copyFeedback) {currentFeedback.style.display = 'none';}
+            currentFeedback = copyFeedback;
+
+            copyIcon.classList.add('d-none');
+            checkIcon.classList.remove('d-none');
+            copyFeedback.style.display = 'block';
+            copyButton.style.borderColor = 'var(--color-success-fg)';
+
+            setTimeout(() => {
+                copyIcon.classList.remove('d-none');
+                checkIcon.classList.add('d-none');
+                copyFeedback.style.display = 'none';
+                copyButton.style.borderColor = '';
+            }, 2000);
+        });
+    });
+});
+
+</script>
+
+
+</html>
